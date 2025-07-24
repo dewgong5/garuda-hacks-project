@@ -38,6 +38,7 @@ export default function Home() {
   };
 
   // === UI Rendering ===
+  
   return (
     <div className="h-screen w-screen flex justify-center items-center bg-transparent select-none">
       {/* Main card container */}
