@@ -1,14 +1,10 @@
 'use client';
 import { useEffect, useState } from 'react';
+import girl from './assets/girl.jpg'; // ✅ fixed import
+import logo from './assets/logo.png';
 
 export default function Home() {
-  const steps = [
-    'LETS',
-    'START',
-    'YOUR',
-    'JOURNEY',
-  ];
-
+  const steps = ['LETS', 'START', 'YOUR', 'JOURNEY'];
   const [displayedText, setDisplayedText] = useState('');
   const [stepIndex, setStepIndex] = useState(0);
   const [charIndex, setCharIndex] = useState(0);
@@ -31,149 +27,57 @@ export default function Home() {
   }, [charIndex, stepIndex]);
 
   const handleClose = () => {
-    window?.require?.('electron')?.ipcRenderer?.send('close-window');
+    window?.electronAPI?.closeWindow(); // ✅ this is correct
   };
+  
+  const handleStart = () => {
+    window?.electronAPI?.openMiniWindow(); // ✅ also correct
+  };
+  
 
   return (
-    <div
-      style={{
-        height: '100vh',
-        width: '100vw',
-        backgroundColor: 'transparent',
-        margin: 0,
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        overflow: 'hidden',
-        WebkitAppRegion: 'drag',
-      } as any}
-    >
-      <div
-        style={{
-          width: 300,
-          height: 300,
-          background: 'rgba(255, 255, 255, 0.15)',
-          backdropFilter: 'blur(10px)',
-          WebkitBackdropFilter: 'blur(10px)',
-          borderRadius: 20,
-          padding: 20,
-          position: 'relative',
-          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)',
-          border: '1px solid rgba(255, 255, 255, 0.2)',
-          WebkitAppRegion: 'no-drag', // Prevents dragging the card itself
-        } as any}
-      >
-        {/* Logo top-left */}
-        <div
-          style={{
-            position: 'absolute',
-            top: 12,
-            left: 12,
-            width: 32,
-            height: 32,
-            borderRadius: '50%',
-            overflow: 'hidden',
-            WebkitAppRegion: 'no-drag',
-          } as any}
-        >
-          <img
-            src="/logo.png"
-            alt="Logo"
-            style={{
-              width: '100%',
-              height: '100%',
-              objectFit: 'cover',
-              WebkitAppRegion: 'no-drag',
-            } as any}
-          />
-        </div>
+    <div className="h-screen w-screen m-0 flex justify-center items-center overflow-hidden bg-transparent select-none">
+      <div className="w-[300px] h-[300px] rounded-2xl p-5 relative backdrop-blur-md bg-white/10 border border-white/20 shadow-lg">
+        {/* Logo */}
+        <img
+  src={logo.src}
+  alt="Logo"
+  className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+/>
 
-        {/* Close button */}
+
+        {/* Close Button */}
         <button
-          onClick={handleClose}
-          style={{
-            position: 'absolute',
-            top: 12,
-            right: 12,
-            width: 32,
-            height: 32,
-            borderRadius: '50%',
-            backgroundColor: 'black',
-            color: 'white',
-            fontSize: 16,
-            border: 'none',
-            cursor: 'pointer',
-            WebkitAppRegion: 'no-drag',
-          } as any}
-        >
-          ✕
-        </button>
+  onClick={handleClose}
+  className="absolute top-3 right-3 w-8 h-8 bg-black text-white rounded-full text-lg flex justify-center items-center transition-all duration-200 hover:scale-110 hover:bg-red-600"
+>
+  ✕
+</button>
+
 
         {/* Content */}
-        <div style={{ display: 'flex', marginTop: 40 }}>
-          {/* Left Image */}
-          <div
-            style={{
-              flex: 1,
-              borderRadius: 12,
-              overflow: 'hidden',
-              marginRight: 12,
-              WebkitAppRegion: 'no-drag',
-            } as any}
-          >
-            <img
-              src="/girl.jpg"
-              alt="Profile"
-              style={{
-                width: '100%',
-                height: '100%',
-                objectFit: 'cover',
-                WebkitAppRegion: 'no-drag',
-              } as any}
-            />
+        <div className="flex mt-10">
+          {/* Image */}
+          <div className="flex-1 mr-3 rounded-xl overflow-hidden">
+            <img src={girl.src} alt="Profile" className="w-full h-full object-cover" />
           </div>
 
-          {/* Right Typing Text */}
-          <div
-            style={{
-              flex: 1,
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'center',
-              WebkitAppRegion: 'no-drag',
-            } as any}
-          >
-            <p
-              style={{
-                fontWeight: 'bold',
-                fontSize: 14,
-                lineHeight: '1.5',
-                color: '#000',
-                margin: 0,
-                whiteSpace: 'pre-line',
-              }}
-            >
+          {/* Typing Text */}
+          <div className="flex-1 flex flex-col justify-center">
+            <p className="text-sm font-bold text-black leading-snug whitespace-pre-line m-0">
               {displayedText}
             </p>
           </div>
         </div>
 
         {/* Start Button */}
-        <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 16 }}>
-          <button
-            style={{
-              backgroundColor: 'black',
-              color: 'white',
-              borderRadius: 9999,
-              padding: '6px 16px',
-              fontSize: 12,
-              border: 'none',
-              cursor: 'pointer',
-              WebkitAppRegion: 'no-drag',
-            } as any}
-          >
-            START
-          </button>
+        <div className="flex justify-end mt-4">
+        <button
+  onClick={handleStart}
+  className="bg-black text-white rounded-full px-4 py-1 text-xs transition-all duration-300 hover:bg-white hover:text-black hover:shadow-[0_0_10px_rgba(255,255,255,0.6)]"
+>
+  START
+</button>
         </div>
       </div>
     </div>
