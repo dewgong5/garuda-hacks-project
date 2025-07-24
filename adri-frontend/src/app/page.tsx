@@ -45,9 +45,11 @@ export default function Home() {
 
 
         {/* Logo in top-left */}
-        <div className="absolute top-3 left-3 w-10 h-10 rounded-full bg-white/30 backdrop-blur flex items-center justify-center shadow-md overflow-hidden">
-          <img src={logo.src} alt="Logo" className="w-10 h-10 object-contain rounded-full" />
-        </div>
+        {/* Logo in top-left */}
+<div className="absolute top-3 left-3 w-10 h-10 rounded-full bg-white/30 backdrop-blur flex items-center justify-center shadow-md overflow-hidden transition-transform duration-300 hover:scale-110">
+  <img src={logo.src} alt="Logo" className="w-10 h-10 object-contain rounded-full" />
+</div>
+
 
         {/* Close Button - top-right corner */}
         <button
@@ -60,17 +62,19 @@ export default function Home() {
         {/* Content: Image + Right side (text + button) */}
         <div className="flex mt-10">
           {/* Profile Image */}
-          <div className="w-[175px] h-[228px] -ml-2 rounded-xl overflow-hidden shadow-lg">
+          {/* Profile Image */}
+<div className="w-[175px] h-[228px] -ml-2 rounded-xl overflow-hidden shadow-lg transition-transform duration-300 hover:scale-102">
+  <img
+    src={girl.src}
+    alt="Profile"
+    className="w-full h-full object-cover"
+  />
+</div>
 
-            <img
-              src={girl.src}
-              alt="Profile"
-              className="w-full h-full object-cover"
-            />
-          </div>
 
           {/* Text + Start Button beside image */}
-          <div className="flex flex-col justify-between pl-4 py-1 flex-1">
+          <div className="flex flex-col gap-2 pl-4 py-1 flex-1 justify-end">
+
             {/* Typing text */}
             <p className="text-sm font-bold text-black leading-snug whitespace-pre-line m-0">
               {displayedText}
@@ -78,11 +82,16 @@ export default function Home() {
 
             {/* Start Button (fixed beside image) */}
             <button
-              onClick={handleStart}
-              className="mt-4 bg-black text-white rounded-full px-4 py-1 text-xs transition-all duration-300 hover:bg-white hover:text-black hover:shadow-[0_0_10px_rgba(255,255,255,0.6)]"
-            >
-              START
-            </button>
+  onClick={handleStart}
+  className="m-0 bg-black text-white border border-transparent rounded-lg px-5 py-[6px] text-sm font-bold tracking-wide
+             transition-all duration-300 ease-in-out
+             hover:bg-white hover:text-black hover:border-black hover:scale-105"
+>
+  START
+</button>
+
+
+
           </div>
         </div>
       </div>
