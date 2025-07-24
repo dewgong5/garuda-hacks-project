@@ -9,7 +9,11 @@
     "build": "electron-builder",
     "package": "electron-builder --publish=never"
   },
-  "keywords": ["electron", "ai", "assistance"],
+  "keywords": [
+    "electron",
+    "ai",
+    "assistance"
+  ],
   "author": "",
   "license": "MIT",
   "devDependencies": {
@@ -17,7 +21,9 @@
     "electron-builder": "^24.0.0"
   },
   "dependencies": {
+    "@elevenlabs/elevenlabs-js": "^2.7.0",
     "@google/genai": "^1.11.0",
+    "dotenv": "^17.2.0",
     "lit": "^3.0.0"
   },
   "build": {
