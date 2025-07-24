@@ -40,7 +40,9 @@ function createWindow() {
     mainWindow.webContents.openDevTools();
 
     console.log('📄 Loading frontend HTML...');
-    mainWindow.loadFile(path.join(__dirname, 'frontend', 'index.html'));
+    // mainWindow.loadFile(path.join(__dirname, 'frontend', 'index.html'));
+    mainWindow.loadURL('http://localhost:3000');
+
 
     mainWindow.once('ready-to-show', () => {
         console.log('✅ Window ready to show');
