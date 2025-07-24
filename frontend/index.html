@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cheating Mommy</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        #app {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .title {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            font-size: 16px;
+            opacity: 0.8;
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .label {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .input {
+            padding: 12px 16px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 14px;
+            width: 100%;
+        }
+
+        .input:focus {
+            outline: none;
+            border-color: #007aff;
+        }
+
+        .input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .button {
+            padding: 14px 32px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary {
+            background: white;
+            color: #333;
+        }
+
+        .btn-primary:hover {
+            background: rgba(255, 255, 255, 0.9);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .response-area {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 16px;
+            overflow-y: auto;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            min-height: 200px;
+        }
+
+        .status {
+            text-align: center;
+            font-size: 14px;
+            opacity: 0.8;
+            margin-top: 10px;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="header">
+            <h1 class="title">Cheating Mommy</h1>
+            <p class="subtitle">Your AI-powered exam assistant</p>
+        </div>
+
+        <div class="main-content">
+            <!-- Setup Section -->
+            <div id="setup-section">
+                <div class="input-group">
+                    <label class="label">API Key (Hardcoded)</label>
+                    <input 
+                        type="text" 
+                        id="api-key-input"
+                        class="input" 
+                        value="AIzaSyDPGDUkS6Zp6HIl6z_Qc9fW6L8d7FfJzeo"
+                        readonly
+                        style="background: rgba(255, 255, 255, 0.05); color: rgba(255, 255, 255, 0.7);"
+                    />
+                </div>
+                
+                <button id="start-btn" class="button btn-primary">
+                    Restart Session
+                </button>
+                <p style="font-size: 12px; opacity: 0.7; margin-top: 10px; text-align: center;">
+                    Session will auto-start in 1 second...
+                </p>
+            </div>
+
+            <!-- Response Section -->
+            <div id="response-section" class="hidden">
+                <div class="response-area" id="response-text">
+                    Waiting for AI response...
+                </div>
+                
+                <!-- Text input for manual messages -->
+                <div class="input-group" style="margin-top: 20px;">
+                    <label class="label">Send Message</label>
+                    <div style="display: flex; gap: 10px;">
+                        <input 
+                            type="text" 
+                            id="message-input"
+                            class="input" 
+                            placeholder="Type your message here..."
+                            style="flex: 1;"
+                        />
+                        <button id="send-btn" class="button btn-primary" style="white-space: nowrap;">
+                            Send
+                        </button>
+                    </div>
+                </div>
+                
+                <button id="stop-btn" class="button btn-secondary" style="margin-top: 20px;">
+                    Stop Session
+                </button>
+                
+                <!-- Debug button for testing -->
+                <button id="debug-btn" class="button btn-secondary" style="margin-top: 10px;">
+                    Test Send Message
+                </button>
+                
+                <!-- Test response button -->
+                <button id="test-response-btn" class="button btn-secondary" style="margin-top: 10px;">
+                    Test Response Display
+                </button>
+            </div>
+
+            <div class="status" id="status">Ready</div>
+        </div>
+    </div>
+
+    <script src="utils/renderer.js"></script>
+    <script>
+        // Simple vanilla JS app
+        const apiKeyInput = document.getElementById('api-key-input');
+        const startBtn = document.getElementById('start-btn');
+        const stopBtn = document.getElementById('stop-btn');
+        const sendBtn = document.getElementById('send-btn');
+        const messageInput = document.getElementById('message-input');
+        const debugBtn = document.getElementById('debug-btn');
+        const testResponseBtn = document.getElementById('test-response-btn');
+        const setupSection = document.getElementById('setup-section');
+        const responseSection = document.getElementById('response-section');
+        const responseText = document.getElementById('response-text');
+        const status = document.getElementById('status');
+
+        let isSessionActive = false;
+
+        // Auto-start function
+        async function autoStartSession() {
+            const apiKey = apiKeyInput.value.trim();
+            if (!apiKey) {
+                status.textContent = 'Error: API key required';
+                return;
+            }
+
+            try {
+                status.textContent = 'Starting session...';
+                
+                // Initialize Gemini session
+                const geminiResult = await window.rendererUtils.initializeGemini(
+                    apiKey, '', 'interview', 'en-US'
+                );
+
+                if (!geminiResult.success) {
+                    throw new Error(geminiResult.error || 'Failed to initialize Gemini session');
+                }
+
+                // Start audio capture only (no automatic screenshots)
+                const captureResult = await window.rendererUtils.startAudioCapture();
+
+                if (!captureResult.success) {
+                    throw new Error('Failed to start audio capture');
+                }
+
+                // Show response section
+                setupSection.classList.add('hidden');
+                responseSection.classList.remove('hidden');
+                isSessionActive = true;
+                status.textContent = 'Session active - Listening...';
+
+            } catch (error) {
+                console.error('Failed to start session:', error);
+                status.textContent = 'Error: ' + error.message;
+            }
+        }
+
+        // Auto-start when page loads
+        window.addEventListener('load', () => {
+            setTimeout(autoStartSession, 1000); // Start after 1 second
+        });
+
+        // Keep the manual start button as backup
+        startBtn.addEventListener('click', autoStartSession);
+
+        stopBtn.addEventListener('click', async () => {
+            try {
+                await window.electronAPI.stopAudioCapture();
+                
+                // Show setup section
+                responseSection.classList.add('hidden');
+                setupSection.classList.remove('hidden');
+                isSessionActive = false;
+                status.textContent = 'Session stopped';
+                responseText.textContent = 'Waiting for AI response...';
+                
+            } catch (error) {
+                console.error('Failed to stop session:', error);
+                status.textContent = 'Error stopping session: ' + error.message;
+            }
+        });
+
+        // Send button event handler
+        sendBtn.addEventListener('click', async () => {
+            const message = messageInput.value.trim();
+            if (!message) {
+                status.textContent = 'Error: Please enter a message';
+                return;
+            }
+
+            try {
+                status.textContent = 'Capturing screenshot and sending message...';
+                
+                // First capture a screenshot
+                const screenshotResult = await window.electronAPI.captureScreenshot({ quality: 'medium' });
+                
+                if (!screenshotResult.success) {
+                    throw new Error('Failed to capture screenshot: ' + (screenshotResult.error || 'Unknown error'));
+                }
+                
+                // Send the screenshot to Gemini
+                const imageResult = await window.electronAPI.sendImageContent({
+                    data: screenshotResult.data,
+                    mimeType: 'image/png'
+                });
+                
+                if (!imageResult.success) {
+                    throw new Error('Failed to send screenshot: ' + (imageResult.error || 'Unknown error'));
+                }
+                
+                // Then send the text message
+                const textResult = await window.electronAPI.sendTextMessage(message);
+                
+                if (textResult.success) {
+                    messageInput.value = '';
+                    status.textContent = 'Message and screenshot sent successfully';
+                } else {
+                    status.textContent = 'Error sending message: ' + (textResult.error || 'Unknown error');
+                }
+            } catch (error) {
+                console.error('Failed to send message:', error);
+                status.textContent = 'Error sending message: ' + error.message;
+            }
+        });
+
+        // Enter key handler for message input
+        messageInput.addEventListener('keypress', async (event) => {
+            if (event.key === 'Enter') {
+                sendBtn.click();
+            }
+        });
+
+        // Debug button event handler
+        debugBtn.addEventListener('click', async () => {
+            try {
+                console.log('🧪 Testing send message functionality...');
+                const testMessage = 'Hello, this is a test message from Cheating Mommy!';
+                console.log('📤 Sending test message with screenshot:', testMessage);
+                
+                // First capture a screenshot
+                const screenshotResult = await window.electronAPI.captureScreenshot({ quality: 'medium' });
+                console.log('📸 Screenshot captured:', screenshotResult.success);
+                
+                if (!screenshotResult.success) {
+                    throw new Error('Failed to capture screenshot: ' + (screenshotResult.error || 'Unknown error'));
+                }
+                
+                // Send the screenshot to Gemini
+                const imageResult = await window.electronAPI.sendImageContent({
+                    data: screenshotResult.data,
+                    mimeType: 'image/png'
+                });
+                console.log('📸 Screenshot sent:', imageResult.success);
+                
+                if (!imageResult.success) {
+                    throw new Error('Failed to send screenshot: ' + (imageResult.error || 'Unknown error'));
+                }
+                
+                // Then send the text message
+                const textResult = await window.electronAPI.sendTextMessage(testMessage);
+                console.log('📥 Test message result:', textResult);
+                
+                if (textResult.success) {
+                    status.textContent = 'Test message and screenshot sent successfully!';
+                } else {
+                    status.textContent = 'Test message failed: ' + (textResult.error || 'Unknown error');
+                }
+            } catch (error) {
+                console.error('❌ Test message error:', error);
+                status.textContent = 'Test message error: ' + error.message;
+            }
+        });
+
+        // Test response display button
+        testResponseBtn.addEventListener('click', async () => {
+            console.log('🧪 Testing response display...');
+            responseText.textContent = 'This is a test response to verify the display is working!';
+            status.textContent = 'Test response displayed';
+            
+            // Also test the main process response
+            try {
+                await window.electronAPI.testResponse();
+                console.log('✅ Test response sent from main process');
+            } catch (error) {
+                console.error('❌ Test response failed:', error);
+            }
+        });
+
+        // Listen for AI responses from main process
+        if (window.electronAPI) {
+            console.log('🔧 Setting up event listeners...');
+            
+            window.electronAPI.on('update-response', (response) => {
+                console.log('🤖 AI Response received:', response);
+                responseText.textContent = response;
+            });
+            
+            window.electronAPI.on('update-status', (status) => {
+                console.log('📊 Status update received:', status);
+                // Don't override the status text here since we have our own status management
+            });
+            
+            console.log('✅ Event listeners set up successfully');
+        } else {
+            console.error('❌ electronAPI not available');
+        }
+
+        console.log('Simple Cheating Mommy app loaded');
+        
+        // Debug: Check if rendererUtils is available
+        if (window.rendererUtils) {
+            console.log('✅ Renderer utilities available');
+        } else {
+            console.log('❌ Renderer utilities not available');
+        }
+    </script>
+</body>
+</html> 

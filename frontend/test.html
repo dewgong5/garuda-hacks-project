@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cheating Mommy - Test</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            height: 100vh;
+        }
+        .test-container {
+            text-align: center;
+            padding: 40px;
+        }
+        .test-title {
+            font-size: 32px;
+            margin-bottom: 20px;
+        }
+        .test-status {
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
+        .test-button {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .test-button:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1 class="test-title">Cheating Mommy</h1>
+        <div class="test-status">App is loading...</div>
+        <button class="test-button" onclick="testFunction()">Test Button</button>
+    </div>
+    
+    <script>
+        function testFunction() {
+            alert('App is working!');
+        }
+        
+        // Test if electronAPI is available
+        if (window.electronAPI) {
+            document.querySelector('.test-status').textContent = 'Electron API is available!';
+        } else {
+            document.querySelector('.test-status').textContent = 'Electron API not available';
+        }
+        
+        console.log('Test page loaded successfully');
+    </script>
+</body>
+</html> 
