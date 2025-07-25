@@ -5,6 +5,7 @@ declare global {
     electronAPI?: {
       closeWindow: () => void;
       openMiniWindow: () => void;
+      launchLockin: () => void;
       // Add other methods if needed
     };
   }

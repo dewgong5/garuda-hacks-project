@@ -44,6 +44,7 @@ const CHANNELS = {
         TOGGLE_VISIBILITY: 'window-toggle-visibility',
         UPDATE_CONTENT_PROTECTION: 'window-update-content-protection',
         OPEN_REACT_APP: 'window-open-react-app',
+        SHOW_MAIN: 'window-show-main',
         TOGGLE_DRAWING: 'window-toggle-drawing',
     },
 
