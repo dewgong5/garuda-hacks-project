@@ -1,7 +1,7 @@
-import WebSocket from "ws";
-import * as fs from "node:fs";
-import Speaker from "speaker";
-import { MPEGDecoder } from "mpg123-decoder";
+const WebSocket = require("ws");
+const fs = require("node:fs");
+const Speaker = require("speaker");
+// Remove: const { MPEGDecoder } = require("mpg123-decoder");
 
 const apiKey = "sk_8564e93449ea565370fdcc96f9a901f4603e39c38658499a";
 const model = "eleven_flash_v2_5";
@@ -13,7 +13,6 @@ console.log("Using model:", model);
 console.log("Using voice id:", voiceId);
 console.log("Using base URL:", baseUrl);
 console.log(`Measuring latency with ${numOfTrials} requests...\n`);
-
 
 function writeChunkToFile(base64str, chunkIndex, outputDir) {
   const audioBuffer = Buffer.from(base64str, "base64");
@@ -30,9 +29,13 @@ function writeChunkToFile(base64str, chunkIndex, outputDir) {
 // Stream MP3 chunks directly to speaker
 let speakerStream = null;
 let decoder = null;
+let MPEGDecoder; // Will be loaded dynamically
 async function streamMp3ChunkToSpeaker(base64str) {
   const audioBuffer = Buffer.from(base64str, "base64");
   if (!decoder) {
+    if (!MPEGDecoder) {
+      ({ MPEGDecoder } = await import("mpg123-decoder"));
+    }
     decoder = new MPEGDecoder();
     await decoder.ready;
   }
@@ -157,7 +160,7 @@ async function textToSpeechInputStreaming(text) {
   });
 }
 
-export async function measureLatencies() {
+async function measureLatencies() {
   const text =
     "Hello we are in Indonesia. We love eating fried chicken in indonesia. I ride a car everyday. The sun is very hot.";
 
@@ -168,4 +171,11 @@ export async function measureLatencies() {
   return result;
 }
 
-await measureLatencies();
+if (require.main === module) {
+  measureLatencies();
+}
+
+module.exports = {
+  textToSpeechInputStreaming,
+  measureLatencies,
+};
