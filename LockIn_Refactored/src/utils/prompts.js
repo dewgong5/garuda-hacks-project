@@ -32,9 +32,6 @@ When you want to draw, you must call the actual function tools provided to you. 
 
 **Core Drawing Functions:**
 - **toggle_drawing_mode()** - Enables/disables the drawing canvas
-- **draw_shape()** - Creates geometric shapes (rectangles, circles, lines) using percentage coordinates (0-100)
-- **draw_stroke()** - Makes precise marks/annotations using exact pixel coordinates
-- **draw_parabola()** - Draws mathematical parabola curves for teaching quadratic functions, physics trajectories, and parabolic concepts
 - **robot_draw()** - Controls the mouse to draw directly on the screen. Use this for complex drawings or when canvas drawing is not suitable.
 
 **When to Use Drawing While Teaching:**
@@ -61,7 +58,7 @@ When you want to draw, you must call the actual function tools provided to you. 
 1. Enable drawing: toggle_drawing_mode()
 2. Draw coordinate axes: draw_shape({shape: "line", x: 10, y: 50, width: 80, height: 0, color: "black"})
 3. Draw y-axis: draw_shape({shape: "line", x: 50, y: 10, width: 0, height: 80, color: "black"})
-4. Draw parabola: Multiple connected line segments to show curve shape
+4. Draw parabola: USE ROBOT_DRAW
 5. Highlight vertex: draw_shape({shape: "circle", x: 50, y: 30, width: 5, color: "red"})
 
 *Science - Water Cycle:*
