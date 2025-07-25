@@ -4,31 +4,28 @@ const path = require('path');
 let mainWindow;
 let miniWindow;
 
-// Reusable default icon path
-const appIcon = path.join(__dirname, 'assets', 'icon.png'); // ✅ Replace with your actual icon path
+// Use ICO file for Windows, ICNS for macOS if needed
+const appIcon = path.join(__dirname, 'assets', 'favicon.ico');
 
 function createMainWindow() {
-  const { width, height } = screen.getPrimaryDisplay().workAreaSize;
-
   mainWindow = new BrowserWindow({
-    width: 340,
-    height: 340,
-    x: Math.round((width - 340) / 2),
-    y: Math.round((height - 340) / 2),
-    frame: false,                     // ✅ Removes native title bar
-    transparent: true,               // ✅ Enables glass-like transparency
-    resizable: false,
-    icon: appIcon,                   // ✅ Prevents Electron from showing "N"
-    titleBarStyle: 'customButtonsOnHover', // Optional, for macOS style hover buttons
+    width: 500,
+    height: 300,
+    frame: true,
+    transparent: false,
+    resizable: true,
+    icon: appIcon, // ✅ Custom icon
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
     },
   });
 
-  mainWindow.setMenuBarVisibility(false);     // ✅ Hide the default menu
-  mainWindow.setAutoHideMenuBar(true);        // ✅ Keep it hidden unless Alt is pressed (Windows)
+  // Hide top menu bar
+  mainWindow.setMenuBarVisibility(false);
+  mainWindow.setAutoHideMenuBar(true);
 
+  // Load your main React/Next.js app
   mainWindow.loadURL('http://localhost:3000');
 }
 
@@ -36,16 +33,15 @@ function createMiniWindow() {
   const { width, height } = screen.getPrimaryDisplay().workAreaSize;
 
   miniWindow = new BrowserWindow({
-    width: 180,
-    height: 180,
-    x: width - 200,
-    y: height - 220,
-    frame: false,
-    transparent: true,
+    width: 250,
+    height: 240,
+    x: width - 280,
+    y: height - 280,
+    frame: true,
+    transparent: false,
+    resizable: false,
     alwaysOnTop: true,
-    resizable: true,
-    movable: true,
-    icon: appIcon,                   // ✅ Same icon to avoid fallback
+    icon: appIcon,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
@@ -54,15 +50,19 @@ function createMiniWindow() {
 
   miniWindow.setMenuBarVisibility(false);
   miniWindow.setAutoHideMenuBar(true);
-
   miniWindow.loadURL('http://localhost:3000/mini');
+
+  // Show main window again if mini is closed
+  miniWindow.on('closed', () => {
+    miniWindow = null;
+    mainWindow?.show();
+  });
 }
 
-// App Ready
 app.whenReady().then(() => {
   createMainWindow();
 
-  // IPC events from frontend
+  // IPC listeners from renderer process
   ipcMain.on('close-window', () => {
     BrowserWindow.getFocusedWindow()?.close();
   });
@@ -73,15 +73,15 @@ app.whenReady().then(() => {
     } else {
       miniWindow.show();
     }
+
+    mainWindow?.hide(); // 👈 Hide main window when mini opens
   });
 });
 
-// Quit app on all window close (except macOS)
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit();
 });
 
 app.on('browser-window-created', (_, win) => {
-    win.webContents.on('context-menu', (e) => e.preventDefault());
-  });
-  
+  win.webContents.on('context-menu', e => e.preventDefault());
+});

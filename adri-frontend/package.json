@@ -7,8 +7,8 @@
   "description": "Electron + NextJS example project",
   "scripts": {
     "dev": "concurrently -n \"NEXT,ELECTRON\" -c \"yellow,blue\" --kill-others \"next dev\" \"electron .\"",
-    "build": "next build && electron-builder",
-    "start": "concurrently \"next start\" \"wait-on http://localhost:3000 && electron .\"",
+    "build": "next build && next export",
+    "start": "concurrently \"npx serve out\" \"wait-on http://localhost:3000 && electron .\"",
     "lint": "next lint"
   },
   "dependencies": {
@@ -27,6 +27,7 @@
     "electron": "^37.2.4",
     "electron-builder": "^26.0.12",
     "tailwindcss": "^4.1.11",
-    "typescript": "^5"
+    "typescript": "^5",
+    "wait-on": "^8.0.4"
   }
 }
