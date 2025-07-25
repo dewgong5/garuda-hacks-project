@@ -1,0 +1,553 @@
+<!doctype html>
+<html>
+    <head>
+        <meta http-equiv="content-security-policy" content="script-src 'self' 'unsafe-inline'" />
+        <title>LockIn - AI Interview Assistant</title>
+        <style>
+            :root {
+                --background-transparent: transparent;
+                --text-color: rgba(229, 229, 231, 0.7);
+                --border-color: rgba(255, 255, 255, 0.1);
+                --header-background: rgba(0, 0, 0, 0.4);
+                --header-actions-color: rgba(255, 255, 255, 0.4);
+                --main-content-background: rgba(0, 0, 0, 0.096);
+                --button-background: rgba(0, 0, 0, 0.3);
+                --button-border: rgba(255, 255, 255, 0.05);
+                --icon-button-color: rgba(229, 229, 231, 0.7);
+                --hover-background: rgba(255, 255, 255, 0.05);
+                --input-background: rgba(0, 0, 0, 0.2);
+                --placeholder-color: rgba(255, 255, 255, 0.3);
+                --focus-border-color: rgba(0, 122, 255, 0.7);
+                --focus-box-shadow: rgba(0, 122, 255, 0.1);
+                --input-focus-background: rgba(0, 0, 0, 0.3);
+                --scrollbar-track: rgba(0, 0, 0, 0.2);
+                --scrollbar-thumb: rgba(255, 255, 255, 0.2);
+                --scrollbar-thumb-hover: rgba(255, 255, 255, 0.3);
+                --preview-video-background: rgba(0, 0, 0, 0.9);
+                --preview-video-border: rgba(255, 255, 255, 0.15);
+                --option-label-color: rgba(255, 255, 255, 0.8);
+                --screen-option-background: rgba(0, 0, 0, 0.4);
+                --screen-option-hover-background: rgba(0, 0, 0, 0.6);
+                --screen-option-selected-background: rgba(0, 122, 255, 0.15);
+                --screen-option-text: rgba(255, 255, 255, 0.7);
+                --description-color: rgba(255, 255, 255, 0.6);
+                --start-button-background: white;
+                --start-button-color: black;
+                --start-button-border: white;
+                --start-button-hover-background: rgba(255, 255, 255, 0.8);
+                --start-button-hover-border: rgba(0, 0, 0, 0.2);
+                --text-input-button-background: #007aff;
+                --text-input-button-hover: #0056b3;
+                --link-color: #007aff;
+                --key-background: rgba(255, 255, 255, 0.1);
+                --scrollbar-background: rgba(0, 0, 0, 0.4);
+
+                /* Layout-specific variables */
+                --header-padding: 10px 20px;
+                --header-font-size: 16px;
+                --header-gap: 12px;
+                --header-button-padding: 8px 16px;
+                --header-icon-padding: 8px;
+                --header-font-size-small: 13px;
+                --main-content-padding: 20px;
+                --main-content-margin-top: 10px;
+                --icon-size: 24px;
+                --border-radius: 10px;
+                --content-border-radius: 10px;
+            }
+
+            /* Compact layout styles */
+            :root.compact-layout {
+                --header-padding: 6px 12px;
+                --header-font-size: 13px;
+                --header-gap: 6px;
+                --header-button-padding: 4px 8px;
+                --header-icon-padding: 4px;
+                --header-font-size-small: 10px;
+                --main-content-padding: 10px;
+                --main-content-margin-top: 2px;
+                --icon-size: 16px;
+                --border-radius: 4px;
+                --content-border-radius: 4px;
+            }
+
+            html,
+            body {
+                margin: 0;
+                padding: 0;
+                height: 100%;
+                overflow: hidden;
+                background: transparent;
+            }
+
+            body {
+                font-family:
+                    'Inter',
+                    -apple-system,
+                    BlinkMacSystemFont,
+                    sans-serif;
+            }
+
+            * {
+                box-sizing: border-box;
+            }
+
+            lockin-app {
+                display: block;
+                width: 100%;
+                height: 100%;
+            }
+        </style>
+    </head>
+    <body>
+        <!-- Canvas drawing overlay (hidden by default) -->
+        <canvas id="drawing-canvas" style="
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100vw; 
+            height: 100vh; 
+            background: transparent; 
+            cursor: crosshair; 
+            z-index: 10000; 
+            display: none;
+            pointer-events: none;
+        "></canvas>
+        
+        <!-- Drawing controls (hidden by default) -->
+        <div id="drawing-controls" style="
+            position: fixed; 
+            top: 10px; 
+            left: 10px; 
+            z-index: 10001; 
+            display: none; 
+            gap: 10px;
+        ">
+            <button id="clear-canvas" style="
+                padding: 8px 16px; 
+                background: rgba(0, 0, 0, 0.8); 
+                color: white; 
+                border: 1px solid rgba(255, 255, 255, 0.3); 
+                border-radius: 5px; 
+                cursor: pointer;
+                font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            ">Clear</button>
+            <button id="change-color" style="
+                padding: 8px 16px; 
+                background: rgba(0, 0, 0, 0.8); 
+                color: white; 
+                border: 1px solid rgba(255, 255, 255, 0.3); 
+                border-radius: 5px; 
+                cursor: pointer;
+                font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            ">Color: <span id="current-color">Red</span></button>
+            <button id="exit-drawing" style="
+                padding: 8px 16px; 
+                background: rgba(255, 0, 0, 0.8); 
+                color: white; 
+                border: 1px solid rgba(255, 255, 255, 0.3); 
+                border-radius: 5px; 
+                cursor: pointer;
+                font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            ">Exit (Ctrl+D)</button>
+        </div>
+
+        <script src="assets/marked-4.3.0.min.js"></script>
+        <script type="module" src="components/app/LockInApp.js"></script>
+
+        <lockin-app id="cheddar"></lockin-app>
+        <script src="script.js"></script>
+        <script src="utils/renderer.js"></script>
+        
+        <!-- Canvas drawing functionality -->
+        <script>
+            const canvas = document.getElementById('drawing-canvas');
+            const ctx = canvas.getContext('2d');
+            const drawingControls = document.getElementById('drawing-controls');
+            const clearButton = document.getElementById('clear-canvas');
+            const colorButton = document.getElementById('change-color');
+            const currentColorSpan = document.getElementById('current-color');
+            const exitButton = document.getElementById('exit-drawing');
+            openReactApp()
+            
+            let drawingEnabled = false;
+            let isDrawing = false;
+            let lastX = 0;
+            let lastY = 0;
+            let currentColor = 'red';
+            let colorIndex = 0;
+            const colors = ['red', 'blue', 'green', 'yellow', 'purple', 'orange', 'black', 'white'];
+            const colorNames = ['Red', 'Blue', 'Green', 'Yellow', 'Purple', 'Orange', 'Black', 'White'];
+
+            // Set canvas size with proper scaling
+            function resizeCanvas() {
+                const rect = canvas.getBoundingClientRect();
+                const dpr = window.devicePixelRatio || 1;
+                
+                canvas.width = rect.width * dpr;
+                canvas.height = rect.height * dpr;
+                
+                ctx.scale(dpr, dpr);
+                
+                // Reapply drawing settings after resize
+                ctx.strokeStyle = currentColor;
+                ctx.lineJoin = 'round';
+                ctx.lineCap = 'round';
+                ctx.lineWidth = 3;
+            }
+            
+            window.addEventListener('resize', resizeCanvas);
+            resizeCanvas();
+
+            // Get accurate mouse coordinates
+            function getMousePos(e) {
+                const rect = canvas.getBoundingClientRect();
+                return {
+                    x: e.clientX - rect.left,
+                    y: e.clientY - rect.top
+                };
+            }
+
+            // Get accurate touch coordinates
+            function getTouchPos(e) {
+                const rect = canvas.getBoundingClientRect();
+                return {
+                    x: e.touches[0].clientX - rect.left,
+                    y: e.touches[0].clientY - rect.top
+                };
+            }
+
+            // Toggle drawing mode function
+            function toggleDrawing() {
+                drawingEnabled = !drawingEnabled;
+                canvas.style.display = drawingEnabled ? 'block' : 'none';
+                canvas.style.pointerEvents = drawingEnabled ? 'auto' : 'none';
+                drawingControls.style.display = drawingEnabled ? 'flex' : 'none';
+                
+                if (drawingEnabled) {
+                    resizeCanvas();
+                    console.log('Drawing mode enabled - Press Ctrl+D to exit');
+                } else {
+                    console.log('Drawing mode disabled');
+                }
+            }
+
+            // Clear canvas function
+            function clearCanvas() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                console.log('Canvas cleared');
+            }
+
+            // Change color function
+            function changeColor() {
+                colorIndex = (colorIndex + 1) % colors.length;
+                currentColor = colors[colorIndex];
+                currentColorSpan.textContent = colorNames[colorIndex];
+                ctx.strokeStyle = currentColor;
+                console.log('Color changed to:', colorNames[colorIndex]);
+            }
+
+            // Keyboard shortcuts
+            document.addEventListener('keydown', (e) => {
+                // Ctrl+D to toggle drawing mode
+                if (e.ctrlKey && e.key === 'd') {
+                    e.preventDefault();
+                    toggleDrawing();
+                }
+                // Escape to exit drawing mode
+                if (e.key === 'Escape' && drawingEnabled) {
+                    e.preventDefault();
+                    toggleDrawing();
+                }
+                // Ctrl+R to open React app in separate window
+                if (e.ctrlKey && (e.key === 'r' || e.key === 'R')) {
+                    e.preventDefault();
+                    console.log('Ctrl+R detected, opening React app...');
+                    openReactApp();
+                }
+            });
+
+            // Function to open React app in separate window
+            async function openReactApp() {
+                console.log('openReactApp called');
+                if (window.require) {
+                    console.log('window.require available, invoking IPC...');
+                    const { ipcRenderer } = window.require('electron');
+                    try {
+                        const result = await ipcRenderer.invoke('window-open-react-app');
+                        console.log('IPC result:', result);
+                        if (result.success) {
+                            console.log('React app window opened successfully');
+                        } else {
+                            console.error('Failed to open React app window:', result.error);
+                        }
+                    } catch (error) {
+                        console.error('Error invoking IPC:', error);
+                    }
+                } else {
+                    console.error('window.require not available');
+                }
+            }
+
+            // Button event listeners
+            clearButton.addEventListener('click', clearCanvas);
+            colorButton.addEventListener('click', changeColor);
+            exitButton.addEventListener('click', toggleDrawing);
+
+            // Mouse events
+            canvas.addEventListener('mousedown', (e) => {
+                if (!drawingEnabled) return;
+                isDrawing = true;
+                const pos = getMousePos(e);
+                lastX = pos.x;
+                lastY = pos.y;
+            });
+
+            canvas.addEventListener('mousemove', (e) => {
+                if (!drawingEnabled || !isDrawing) return;
+                
+                const pos = getMousePos(e);
+                ctx.beginPath();
+                ctx.moveTo(lastX, lastY);
+                ctx.lineTo(pos.x, pos.y);
+                ctx.stroke();
+                
+                lastX = pos.x;
+                lastY = pos.y;
+            });
+
+            canvas.addEventListener('mouseup', () => {
+                if (!drawingEnabled) return;
+                isDrawing = false;
+            });
+            
+            canvas.addEventListener('mouseout', () => {
+                if (!drawingEnabled) return;
+                isDrawing = false;
+            });
+
+            // Touch events for mobile support
+            canvas.addEventListener('touchstart', (e) => {
+                if (!drawingEnabled) return;
+                e.preventDefault();
+                isDrawing = true;
+                const pos = getTouchPos(e);
+                lastX = pos.x;
+                lastY = pos.y;
+            });
+
+            canvas.addEventListener('touchmove', (e) => {
+                if (!drawingEnabled) return;
+                e.preventDefault();
+                if (!isDrawing) return;
+                
+                const pos = getTouchPos(e);
+                ctx.beginPath();
+                ctx.moveTo(lastX, lastY);
+                ctx.lineTo(pos.x, pos.y);
+                ctx.stroke();
+                
+                lastX = pos.x;
+                lastY = pos.y;
+            });
+
+            canvas.addEventListener('touchend', (e) => {
+                if (!drawingEnabled) return;
+                e.preventDefault();
+                isDrawing = false;
+            });
+
+            // Draw shape function for AI tool calls
+            function draw_shape(args) {
+                if (!drawingEnabled) {
+                    // Auto-enable drawing mode if not already enabled
+                    toggleDrawing();
+                }
+                
+                const { shape, x, y, width, height, color } = args;
+                
+                // Convert percentage coordinates to actual pixels
+                const canvasRect = canvas.getBoundingClientRect();
+                const actualX = (x / 100) * canvasRect.width;
+                const actualY = (y / 100) * canvasRect.height;
+                const actualWidth = (width / 100) * canvasRect.width;
+                const actualHeight = height ? (height / 100) * canvasRect.height : actualWidth; // For circles, height = width
+                
+                // Set color if provided
+                if (color && colors.includes(color)) {
+                    const colorIdx = colors.indexOf(color);
+                    colorIndex = colorIdx;
+                    currentColor = color;
+                    currentColorSpan.textContent = colorNames[colorIdx];
+                    ctx.strokeStyle = currentColor;
+                }
+                
+                console.log(`Drawing ${shape} at (${actualX}, ${actualY}) with size ${actualWidth}x${actualHeight} in ${color || currentColor}`);
+                
+                ctx.beginPath();
+                
+                switch (shape) {
+                    case 'rectangle':
+                        ctx.rect(actualX, actualY, actualWidth, actualHeight);
+                        ctx.stroke();
+                        break;
+                        
+                    case 'circle':
+                        const radius = actualWidth / 2;
+                        const centerX = actualX + radius;
+                        const centerY = actualY + radius;
+                        ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+                        ctx.stroke();
+                        break;
+                        
+                    case 'line':
+                        const endX = actualX + actualWidth;
+                        const endY = actualY + actualHeight;
+                        ctx.moveTo(actualX, actualY);
+                        ctx.lineTo(endX, endY);
+                        ctx.stroke();
+                        break;
+                        
+                    default:
+                        console.error('Unknown shape:', shape);
+                        return false;
+                }
+                
+                console.log(`✅ ${shape} drawn successfully`);
+                return true;
+            }
+
+            // Draw stroke function for AI tool calls
+            function draw_stroke(args) {
+                if (!drawingEnabled) {
+                    // Auto-enable drawing mode if not already enabled
+                    toggleDrawing();
+                }
+                
+                const { x, y, size = 20, color, type = 'dot' } = args;
+                
+                // Set color if provided
+                if (color && colors.includes(color)) {
+                    const colorIdx = colors.indexOf(color);
+                    colorIndex = colorIdx;
+                    currentColor = color;
+                    currentColorSpan.textContent = colorNames[colorIdx];
+                    ctx.strokeStyle = currentColor;
+                    ctx.fillStyle = currentColor;
+                }
+                
+                console.log(`Drawing ${type} stroke at (${x}, ${y}) with size ${size} in ${color || currentColor}`);
+                
+                ctx.beginPath();
+                
+                switch (type) {
+                    case 'dot':
+                        // Draw a filled circle
+                        ctx.arc(x, y, size / 2, 0, 2 * Math.PI);
+                        ctx.fill();
+                        break;
+                        
+                    case 'cross':
+                        // Draw a cross/plus sign
+                        const halfSize = size / 2;
+                        // Horizontal line
+                        ctx.moveTo(x - halfSize, y);
+                        ctx.lineTo(x + halfSize, y);
+                        // Vertical line
+                        ctx.moveTo(x, y - halfSize);
+                        ctx.lineTo(x, y + halfSize);
+                        ctx.stroke();
+                        break;
+                        
+                    case 'circle':
+                        // Draw a circle outline
+                        ctx.arc(x, y, size / 2, 0, 2 * Math.PI);
+                        ctx.stroke();
+                        break;
+                        
+                    case 'line':
+                        // Draw a short horizontal line
+                        ctx.moveTo(x - size / 2, y);
+                        ctx.lineTo(x + size / 2, y);
+                        ctx.stroke();
+                        break;
+                        
+                    default:
+                        console.error('Unknown stroke type:', type);
+                        return false;
+                }
+                
+                console.log(`✅ ${type} stroke drawn successfully at (${x}, ${y})`);
+                return true;
+            }
+
+            // Draw parabola function for mathematical explanations
+            function draw_parabola(args) {
+                if (!drawingEnabled) {
+                    toggleDrawing();
+                }
+                
+                const { 
+                    centerX = 50, 
+                    centerY = 50, 
+                    width = 30, 
+                    height = 20, 
+                    color = 'blue',
+                    direction = 'up' 
+                } = args;
+                
+                // Convert percentage to pixels
+                const canvasRect = canvas.getBoundingClientRect();
+                const pixelCenterX = (centerX / 100) * canvasRect.width;
+                const pixelCenterY = (centerY / 100) * canvasRect.height;
+                const pixelWidth = (width / 100) * canvasRect.width;
+                const pixelHeight = (height / 100) * canvasRect.height;
+                
+                // Set color
+                if (color && colors.includes(color)) {
+                    const colorIdx = colors.indexOf(color);
+                    colorIndex = colorIdx;
+                    currentColor = color;
+                    currentColorSpan.textContent = colorNames[colorIdx];
+                    ctx.strokeStyle = currentColor;
+                }
+                
+                console.log(`Drawing parabola at (${pixelCenterX}, ${pixelCenterY}) direction ${direction} in ${color}`);
+                
+                ctx.beginPath();
+                ctx.lineWidth = 3;
+                
+                // Draw parabola using quadratic curve
+                const startX = pixelCenterX - pixelWidth/2;
+                const endX = pixelCenterX + pixelWidth/2;
+                
+                if (direction === 'up') {
+                    // Parabola opening upward
+                    ctx.moveTo(startX, pixelCenterY + pixelHeight/2);
+                    ctx.quadraticCurveTo(pixelCenterX, pixelCenterY - pixelHeight/2, endX, pixelCenterY + pixelHeight/2);
+                } else if (direction === 'down') {
+                    // Parabola opening downward
+                    ctx.moveTo(startX, pixelCenterY - pixelHeight/2);
+                    ctx.quadraticCurveTo(pixelCenterX, pixelCenterY + pixelHeight/2, endX, pixelCenterY - pixelHeight/2);
+                }
+                
+                ctx.stroke();
+                console.log(`✅ Parabola drawn successfully`);
+                return true;
+            }
+
+            // Expose functions globally for potential use by other components
+            window.canvasDrawing = {
+                toggle: toggleDrawing,
+                clear: clearCanvas,
+                changeColor: changeColor,
+                draw_shape: draw_shape,
+                draw_stroke: draw_stroke,
+                draw_parabola: draw_parabola,
+                isEnabled: () => drawingEnabled
+            };
+
+            console.log('Canvas drawing initialized. Press Ctrl+D to toggle drawing mode.');
+        </script>
+    </body>
+</html>

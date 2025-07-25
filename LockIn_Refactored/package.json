@@ -1,0 +1,54 @@
+{
+    "name": "lockin",
+    "productName": "LockIn",
+    "version": "0.4.0",
+    "description": "LockIn - AI Assistant for Interviews",
+    "main": "src/index.js",
+    "scripts": {
+        "start": "electron-forge start",
+        "package": "electron-forge package",
+        "make": "electron-forge make",
+        "publish": "electron-forge publish",
+        "lint": "echo \"No linting configured\""
+    },
+    "keywords": [
+        "lockin",
+        "lockin ai",
+        "lockin ai assistant",
+        "lockin ai assistant for interviews",
+        "interview assistant",
+        "ai interview helper"
+    ],
+    "author": {
+        "name": "Jephtha-T",
+        "email": "jephtha909@gmail.com"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/dewgong5/garuda-hacks-project"
+    },
+    "dependencies": {
+        "@google/genai": "^1.2.0",
+        "dotenv": "^17.2.1",
+        "electron-squirrel-startup": "^1.0.1",
+        "mpg123-decoder": "^1.0.2",
+        "node-lame": "^1.4.0",
+        "play-sound": "^1.1.6",
+        "speaker": "^0.5.5",
+        "ws": "^8.18.3",
+        "robotjs": "^0.6.0"
+    },
+    "devDependencies": {
+        "@electron-forge/cli": "^7.8.1",
+        "@electron-forge/maker-deb": "^7.8.1",
+        "@electron-forge/maker-dmg": "^7.8.1",
+        "@electron-forge/maker-rpm": "^7.8.1",
+        "@electron-forge/maker-squirrel": "^7.8.1",
+        "@electron-forge/maker-zip": "^7.8.1",
+        "@electron-forge/plugin-auto-unpack-natives": "^7.8.1",
+        "@electron-forge/plugin-fuses": "^7.8.1",
+        "@electron/fuses": "^1.8.0",
+        "@reforged/maker-appimage": "^5.0.0",
+        "electron": "^30.0.5"
+    }
+}
