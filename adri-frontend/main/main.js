@@ -33,8 +33,8 @@ function createMiniWindow() {
   const { width, height } = screen.getPrimaryDisplay().workAreaSize;
 
   miniWindow = new BrowserWindow({
-    width: 250,
-    height: 240,
+    width: 300, // or your preferred width
+    height: 300, // or your preferred height
     x: width - 280,
     y: height - 280,
     frame: true,
@@ -73,8 +73,7 @@ app.whenReady().then(() => {
     } else {
       miniWindow.show();
     }
-
-    mainWindow?.hide(); // 👈 Hide main window when mini opens
+    mainWindow?.hide();
   });
 });
 

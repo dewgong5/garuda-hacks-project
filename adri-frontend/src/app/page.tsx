@@ -41,9 +41,8 @@ export default function AISpeechCoachCard() {
   }, [])
 
   const handleStart = () => {
-    // Navigate to mini-window
-    window.location.href = "/mini-window"
-  }
+    window?.electronAPI?.openMiniWindow();
+  };
 
   return (
     <div className="w-full max-w-md bg-white/70 backdrop-blur-sm border border-white/20 rounded-2xl p-6 shadow-lg">
