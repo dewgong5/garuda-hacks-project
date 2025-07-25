@@ -34,9 +34,7 @@ function createMiniWindow() {
 
   miniWindow = new BrowserWindow({
     width: 200,
-    height: 300,
-    x: width - 130,
-    y: height - 100,
+    height: 325,
     frame: true,
     transparent: false,
     resizable: false,
