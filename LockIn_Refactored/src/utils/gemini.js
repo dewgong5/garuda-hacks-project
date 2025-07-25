@@ -194,7 +194,7 @@ async function attemptReconnection() {
     }
 }
 
-async function initializeGeminiSession(apiKey, customPrompt = '', profile = 'exam', language = 'en-US', isReconnection = false) {
+async function initializeGeminiSession(apiKey, customPrompt = '', profile = 'teacher', language = 'en-US', isReconnection = false) {
     if (isInitializingSession) {
         console.log('Session initialization already in progress');
         return false;
@@ -509,7 +509,7 @@ function setupGeminiIpcHandlers(geminiSessionRef) {
     // Store the geminiSessionRef globally for reconnection access
     global.geminiSessionRef = geminiSessionRef;
 
-    ipcMain.handle('initialize-gemini', async (event, apiKey, customPrompt, profile = 'exam', language = 'en-US') => {
+    ipcMain.handle('initialize-gemini', async (event, apiKey, customPrompt, profile = 'teacher', language = 'en-US') => {
         const session = await initializeGeminiSession(HARDCODED_API_KEY, customPrompt, profile, language);
         if (session) {
             geminiSessionRef.current = session;

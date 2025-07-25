@@ -139,6 +139,31 @@ class WindowIpcHandlers {
                 return { success: false, error: error.message };
             }
         });
+
+        // Toggle drawing mode
+        ipcBridge.handle(CHANNELS.WINDOW.TOGGLE_DRAWING, async () => {
+            try {
+                if (this.mainWindow && !this.mainWindow.isDestroyed()) {
+                    // Execute JavaScript in the renderer process to toggle drawing
+                    const result = await this.mainWindow.webContents.executeJavaScript(`
+                        if (window.canvasDrawing && typeof window.canvasDrawing.toggle === 'function') {
+                            window.canvasDrawing.toggle();
+                            console.log('Drawing mode toggled via IPC');
+                            true;
+                        } else {
+                            console.error('canvasDrawing not available');
+                            false;
+                        }
+                    `);
+                    return { success: result };
+                } else {
+                    return { success: false, error: 'Window not available' };
+                }
+            } catch (error) {
+                console.error('❌ Failed to toggle drawing mode via IPC:', error);
+                return { success: false, error: error.message };
+            }
+        });
     }
 
     removeHandlers() {

@@ -44,6 +44,7 @@ const CHANNELS = {
         TOGGLE_VISIBILITY: 'window-toggle-visibility',
         UPDATE_CONTENT_PROTECTION: 'window-update-content-protection',
         OPEN_REACT_APP: 'window-open-react-app',
+        TOGGLE_DRAWING: 'window-toggle-drawing',
     },
 
     // General application channels

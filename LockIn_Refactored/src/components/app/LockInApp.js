@@ -116,7 +116,14 @@ export class LockInApp extends LitElement {
         this.startTime = null;
         this.isRecording = false;
         this.sessionActive = false;
-        this.selectedProfile = localStorage.getItem('selectedProfile') || 'exam';
+        // One-time migration: force update existing 'exam' users to 'teacher'
+        const storedProfile = localStorage.getItem('selectedProfile');
+        if (storedProfile === 'exam') {
+            localStorage.setItem('selectedProfile', 'teacher');
+            this.selectedProfile = 'teacher';
+        } else {
+            this.selectedProfile = storedProfile || 'teacher';
+        }
         this.selectedLanguage = localStorage.getItem('selectedLanguage') || 'en-US';
         this.selectedScreenshotInterval = localStorage.getItem('selectedScreenshotInterval') || '5';
         this.selectedImageQuality = localStorage.getItem('selectedImageQuality') || 'medium';

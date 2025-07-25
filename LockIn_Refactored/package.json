@@ -23,14 +23,14 @@
         "name": "Jephtha-T",
         "email": "jephtha909@gmail.com"
     },
-
     "repository": {
         "type": "git",
         "url": "https://github.com/dewgong5/garuda-hacks-project"
     },
     "dependencies": {
         "@google/genai": "^1.2.0",
-        "electron-squirrel-startup": "^1.0.1"
+        "electron-squirrel-startup": "^1.0.1",
+        "robotjs": "^0.6.0"
     },
     "devDependencies": {
         "@electron-forge/cli": "^7.8.1",

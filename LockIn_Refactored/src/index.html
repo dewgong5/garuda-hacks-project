@@ -6,20 +6,20 @@
         <style>
             :root {
                 --background-transparent: transparent;
-                --text-color: #e5e5e7;
-                --border-color: rgba(255, 255, 255, 0.2);
-                --header-background: rgba(0, 0, 0, 0.8);
-                --header-actions-color: rgba(255, 255, 255, 0.6);
-                --main-content-background: rgba(0, 0, 0, 0.8);
-                --button-background: rgba(0, 0, 0, 0.5);
-                --button-border: rgba(255, 255, 255, 0.1);
-                --icon-button-color: rgb(229, 229, 231);
-                --hover-background: rgba(255, 255, 255, 0.1);
-                --input-background: rgba(0, 0, 0, 0.3);
-                --placeholder-color: rgba(255, 255, 255, 0.4);
-                --focus-border-color: #007aff;
-                --focus-box-shadow: rgba(0, 122, 255, 0.2);
-                --input-focus-background: rgba(0, 0, 0, 0.5);
+                --text-color: rgba(229, 229, 231, 0.7);
+                --border-color: rgba(255, 255, 255, 0.1);
+                --header-background: rgba(0, 0, 0, 0.4);
+                --header-actions-color: rgba(255, 255, 255, 0.4);
+                --main-content-background: rgba(0, 0, 0, 0.4);
+                --button-background: rgba(0, 0, 0, 0.3);
+                --button-border: rgba(255, 255, 255, 0.05);
+                --icon-button-color: rgba(229, 229, 231, 0.7);
+                --hover-background: rgba(255, 255, 255, 0.05);
+                --input-background: rgba(0, 0, 0, 0.2);
+                --placeholder-color: rgba(255, 255, 255, 0.3);
+                --focus-border-color: rgba(0, 122, 255, 0.7);
+                --focus-box-shadow: rgba(0, 122, 255, 0.1);
+                --input-focus-background: rgba(0, 0, 0, 0.3);
                 --scrollbar-track: rgba(0, 0, 0, 0.2);
                 --scrollbar-thumb: rgba(255, 255, 255, 0.2);
                 --scrollbar-thumb-hover: rgba(255, 255, 255, 0.3);
@@ -356,11 +356,193 @@
                 isDrawing = false;
             });
 
+            // Draw shape function for AI tool calls
+            function draw_shape(args) {
+                if (!drawingEnabled) {
+                    // Auto-enable drawing mode if not already enabled
+                    toggleDrawing();
+                }
+                
+                const { shape, x, y, width, height, color } = args;
+                
+                // Convert percentage coordinates to actual pixels
+                const canvasRect = canvas.getBoundingClientRect();
+                const actualX = (x / 100) * canvasRect.width;
+                const actualY = (y / 100) * canvasRect.height;
+                const actualWidth = (width / 100) * canvasRect.width;
+                const actualHeight = height ? (height / 100) * canvasRect.height : actualWidth; // For circles, height = width
+                
+                // Set color if provided
+                if (color && colors.includes(color)) {
+                    const colorIdx = colors.indexOf(color);
+                    colorIndex = colorIdx;
+                    currentColor = color;
+                    currentColorSpan.textContent = colorNames[colorIdx];
+                    ctx.strokeStyle = currentColor;
+                }
+                
+                console.log(`Drawing ${shape} at (${actualX}, ${actualY}) with size ${actualWidth}x${actualHeight} in ${color || currentColor}`);
+                
+                ctx.beginPath();
+                
+                switch (shape) {
+                    case 'rectangle':
+                        ctx.rect(actualX, actualY, actualWidth, actualHeight);
+                        ctx.stroke();
+                        break;
+                        
+                    case 'circle':
+                        const radius = actualWidth / 2;
+                        const centerX = actualX + radius;
+                        const centerY = actualY + radius;
+                        ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+                        ctx.stroke();
+                        break;
+                        
+                    case 'line':
+                        const endX = actualX + actualWidth;
+                        const endY = actualY + actualHeight;
+                        ctx.moveTo(actualX, actualY);
+                        ctx.lineTo(endX, endY);
+                        ctx.stroke();
+                        break;
+                        
+                    default:
+                        console.error('Unknown shape:', shape);
+                        return false;
+                }
+                
+                console.log(`✅ ${shape} drawn successfully`);
+                return true;
+            }
+
+            // Draw stroke function for AI tool calls
+            function draw_stroke(args) {
+                if (!drawingEnabled) {
+                    // Auto-enable drawing mode if not already enabled
+                    toggleDrawing();
+                }
+                
+                const { x, y, size = 20, color, type = 'dot' } = args;
+                
+                // Set color if provided
+                if (color && colors.includes(color)) {
+                    const colorIdx = colors.indexOf(color);
+                    colorIndex = colorIdx;
+                    currentColor = color;
+                    currentColorSpan.textContent = colorNames[colorIdx];
+                    ctx.strokeStyle = currentColor;
+                    ctx.fillStyle = currentColor;
+                }
+                
+                console.log(`Drawing ${type} stroke at (${x}, ${y}) with size ${size} in ${color || currentColor}`);
+                
+                ctx.beginPath();
+                
+                switch (type) {
+                    case 'dot':
+                        // Draw a filled circle
+                        ctx.arc(x, y, size / 2, 0, 2 * Math.PI);
+                        ctx.fill();
+                        break;
+                        
+                    case 'cross':
+                        // Draw a cross/plus sign
+                        const halfSize = size / 2;
+                        // Horizontal line
+                        ctx.moveTo(x - halfSize, y);
+                        ctx.lineTo(x + halfSize, y);
+                        // Vertical line
+                        ctx.moveTo(x, y - halfSize);
+                        ctx.lineTo(x, y + halfSize);
+                        ctx.stroke();
+                        break;
+                        
+                    case 'circle':
+                        // Draw a circle outline
+                        ctx.arc(x, y, size / 2, 0, 2 * Math.PI);
+                        ctx.stroke();
+                        break;
+                        
+                    case 'line':
+                        // Draw a short horizontal line
+                        ctx.moveTo(x - size / 2, y);
+                        ctx.lineTo(x + size / 2, y);
+                        ctx.stroke();
+                        break;
+                        
+                    default:
+                        console.error('Unknown stroke type:', type);
+                        return false;
+                }
+                
+                console.log(`✅ ${type} stroke drawn successfully at (${x}, ${y})`);
+                return true;
+            }
+
+            // Draw parabola function for mathematical explanations
+            function draw_parabola(args) {
+                if (!drawingEnabled) {
+                    toggleDrawing();
+                }
+                
+                const { 
+                    centerX = 50, 
+                    centerY = 50, 
+                    width = 30, 
+                    height = 20, 
+                    color = 'blue',
+                    direction = 'up' 
+                } = args;
+                
+                // Convert percentage to pixels
+                const canvasRect = canvas.getBoundingClientRect();
+                const pixelCenterX = (centerX / 100) * canvasRect.width;
+                const pixelCenterY = (centerY / 100) * canvasRect.height;
+                const pixelWidth = (width / 100) * canvasRect.width;
+                const pixelHeight = (height / 100) * canvasRect.height;
+                
+                // Set color
+                if (color && colors.includes(color)) {
+                    const colorIdx = colors.indexOf(color);
+                    colorIndex = colorIdx;
+                    currentColor = color;
+                    currentColorSpan.textContent = colorNames[colorIdx];
+                    ctx.strokeStyle = currentColor;
+                }
+                
+                console.log(`Drawing parabola at (${pixelCenterX}, ${pixelCenterY}) direction ${direction} in ${color}`);
+                
+                ctx.beginPath();
+                ctx.lineWidth = 3;
+                
+                // Draw parabola using quadratic curve
+                const startX = pixelCenterX - pixelWidth/2;
+                const endX = pixelCenterX + pixelWidth/2;
+                
+                if (direction === 'up') {
+                    // Parabola opening upward
+                    ctx.moveTo(startX, pixelCenterY + pixelHeight/2);
+                    ctx.quadraticCurveTo(pixelCenterX, pixelCenterY - pixelHeight/2, endX, pixelCenterY + pixelHeight/2);
+                } else if (direction === 'down') {
+                    // Parabola opening downward
+                    ctx.moveTo(startX, pixelCenterY - pixelHeight/2);
+                    ctx.quadraticCurveTo(pixelCenterX, pixelCenterY + pixelHeight/2, endX, pixelCenterY - pixelHeight/2);
+                }
+                
+                ctx.stroke();
+                console.log(`✅ Parabola drawn successfully`);
+                return true;
+            }
+
             // Expose functions globally for potential use by other components
             window.canvasDrawing = {
                 toggle: toggleDrawing,
                 clear: clearCanvas,
                 changeColor: changeColor,
+                draw_shape: draw_shape,
+                draw_stroke: draw_stroke,
+                draw_parabola: draw_parabola,
                 isEnabled: () => drawingEnabled
             };
 

@@ -328,7 +328,7 @@ export class CustomizeView extends LitElement {
 
     constructor() {
         super();
-        this.selectedProfile = 'interview';
+        this.selectedProfile = 'teacher';
         this.selectedLanguage = 'en-US';
         this.selectedScreenshotInterval = '5';
         this.selectedImageQuality = 'medium';
@@ -367,6 +367,16 @@ export class CustomizeView extends LitElement {
     getProfiles() {
         return [
             {
+                value: 'teacher',
+                name: 'Visual Teacher',
+                description: 'Interactive teaching with visual explanations and diagrams',
+            },
+            {
+                value: 'exam',
+                name: 'Exam Assistant',
+                description: 'Academic assistance for test-taking and exam questions',
+            },
+            {
                 value: 'interview',
                 name: 'Job Interview',
                 description: 'Get help with answering interview questions',
@@ -390,11 +400,6 @@ export class CustomizeView extends LitElement {
                 value: 'negotiation',
                 name: 'Negotiation',
                 description: 'Guidance for business negotiations and deals',
-            },
-            {
-                value: 'exam',
-                name: 'Exam Assistant',
-                description: 'Academic assistance for test-taking and exam questions',
             },
         ];
     }
@@ -436,12 +441,13 @@ export class CustomizeView extends LitElement {
 
     getProfileNames() {
         return {
+            teacher: 'Visual Teacher',
+            exam: 'Exam Assistant',
             interview: 'Job Interview',
             sales: 'Sales Call',
             meeting: 'Business Meeting',
             presentation: 'Presentation',
             negotiation: 'Negotiation',
-            exam: 'Exam Assistant',
         };
     }
 

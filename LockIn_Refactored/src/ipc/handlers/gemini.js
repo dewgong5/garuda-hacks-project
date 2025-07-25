@@ -31,7 +31,7 @@ class GeminiIpcHandlers {
 
     setupHandlers() {
         // Initialize Gemini session
-        ipcBridge.handle(CHANNELS.GEMINI.INITIALIZE, async (event, apiKey = null, customPrompt = '', profile = 'exam', language = 'en-US') => {
+        ipcBridge.handle(CHANNELS.GEMINI.INITIALIZE, async (event, apiKey = null, customPrompt = '', profile = 'teacher', language = 'en-US') => {
             try {
                 console.log('🔄 Initializing Gemini session via IPC...');
                 console.log('🔑 API Key provided:', apiKey ? 'Yes' : 'No (using hardcoded)');

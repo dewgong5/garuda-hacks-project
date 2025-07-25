@@ -47,6 +47,9 @@ function createMainWindow() {
         windowIpcHandlers.setMainWindow(mainWindow);
     }
     
+    // Make main window globally accessible for services
+    global.mainWindow = mainWindow;
+    
     return mainWindow;
 }
 
