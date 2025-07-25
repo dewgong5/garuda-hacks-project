@@ -100,11 +100,271 @@
         </style>
     </head>
     <body>
+        <!-- Canvas drawing overlay (hidden by default) -->
+        <canvas id="drawing-canvas" style="
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100vw; 
+            height: 100vh; 
+            background: transparent; 
+            cursor: crosshair; 
+            z-index: 10000; 
+            display: none;
+            pointer-events: none;
+        "></canvas>
+        
+        <!-- Drawing controls (hidden by default) -->
+        <div id="drawing-controls" style="
+            position: fixed; 
+            top: 10px; 
+            left: 10px; 
+            z-index: 10001; 
+            display: none; 
+            gap: 10px;
+        ">
+            <button id="clear-canvas" style="
+                padding: 8px 16px; 
+                background: rgba(0, 0, 0, 0.8); 
+                color: white; 
+                border: 1px solid rgba(255, 255, 255, 0.3); 
+                border-radius: 5px; 
+                cursor: pointer;
+                font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            ">Clear</button>
+            <button id="change-color" style="
+                padding: 8px 16px; 
+                background: rgba(0, 0, 0, 0.8); 
+                color: white; 
+                border: 1px solid rgba(255, 255, 255, 0.3); 
+                border-radius: 5px; 
+                cursor: pointer;
+                font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            ">Color: <span id="current-color">Red</span></button>
+            <button id="exit-drawing" style="
+                padding: 8px 16px; 
+                background: rgba(255, 0, 0, 0.8); 
+                color: white; 
+                border: 1px solid rgba(255, 255, 255, 0.3); 
+                border-radius: 5px; 
+                cursor: pointer;
+                font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            ">Exit (Ctrl+D)</button>
+        </div>
+
         <script src="assets/marked-4.3.0.min.js"></script>
         <script type="module" src="components/app/LockInApp.js"></script>
 
         <lockin-app id="cheddar"></lockin-app>
         <script src="script.js"></script>
         <script src="utils/renderer.js"></script>
+        
+        <!-- Canvas drawing functionality -->
+        <script>
+            const canvas = document.getElementById('drawing-canvas');
+            const ctx = canvas.getContext('2d');
+            const drawingControls = document.getElementById('drawing-controls');
+            const clearButton = document.getElementById('clear-canvas');
+            const colorButton = document.getElementById('change-color');
+            const currentColorSpan = document.getElementById('current-color');
+            const exitButton = document.getElementById('exit-drawing');
+            
+            let drawingEnabled = false;
+            let isDrawing = false;
+            let lastX = 0;
+            let lastY = 0;
+            let currentColor = 'red';
+            let colorIndex = 0;
+            const colors = ['red', 'blue', 'green', 'yellow', 'purple', 'orange', 'black', 'white'];
+            const colorNames = ['Red', 'Blue', 'Green', 'Yellow', 'Purple', 'Orange', 'Black', 'White'];
+
+            // Set canvas size with proper scaling
+            function resizeCanvas() {
+                const rect = canvas.getBoundingClientRect();
+                const dpr = window.devicePixelRatio || 1;
+                
+                canvas.width = rect.width * dpr;
+                canvas.height = rect.height * dpr;
+                
+                ctx.scale(dpr, dpr);
+                
+                // Reapply drawing settings after resize
+                ctx.strokeStyle = currentColor;
+                ctx.lineJoin = 'round';
+                ctx.lineCap = 'round';
+                ctx.lineWidth = 3;
+            }
+            
+            window.addEventListener('resize', resizeCanvas);
+            resizeCanvas();
+
+            // Get accurate mouse coordinates
+            function getMousePos(e) {
+                const rect = canvas.getBoundingClientRect();
+                return {
+                    x: e.clientX - rect.left,
+                    y: e.clientY - rect.top
+                };
+            }
+
+            // Get accurate touch coordinates
+            function getTouchPos(e) {
+                const rect = canvas.getBoundingClientRect();
+                return {
+                    x: e.touches[0].clientX - rect.left,
+                    y: e.touches[0].clientY - rect.top
+                };
+            }
+
+            // Toggle drawing mode function
+            function toggleDrawing() {
+                drawingEnabled = !drawingEnabled;
+                canvas.style.display = drawingEnabled ? 'block' : 'none';
+                canvas.style.pointerEvents = drawingEnabled ? 'auto' : 'none';
+                drawingControls.style.display = drawingEnabled ? 'flex' : 'none';
+                
+                if (drawingEnabled) {
+                    resizeCanvas();
+                    console.log('Drawing mode enabled - Press Ctrl+D to exit');
+                } else {
+                    console.log('Drawing mode disabled');
+                }
+            }
+
+            // Clear canvas function
+            function clearCanvas() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                console.log('Canvas cleared');
+            }
+
+            // Change color function
+            function changeColor() {
+                colorIndex = (colorIndex + 1) % colors.length;
+                currentColor = colors[colorIndex];
+                currentColorSpan.textContent = colorNames[colorIndex];
+                ctx.strokeStyle = currentColor;
+                console.log('Color changed to:', colorNames[colorIndex]);
+            }
+
+            // Keyboard shortcuts
+            document.addEventListener('keydown', (e) => {
+                // Ctrl+D to toggle drawing mode
+                if (e.ctrlKey && e.key === 'd') {
+                    e.preventDefault();
+                    toggleDrawing();
+                }
+                // Escape to exit drawing mode
+                if (e.key === 'Escape' && drawingEnabled) {
+                    e.preventDefault();
+                    toggleDrawing();
+                }
+                // Ctrl+R to open React app in separate window
+                if (e.ctrlKey && (e.key === 'r' || e.key === 'R')) {
+                    e.preventDefault();
+                    console.log('Ctrl+R detected, opening React app...');
+                    openReactApp();
+                }
+            });
+
+            // Function to open React app in separate window
+            async function openReactApp() {
+                console.log('openReactApp called');
+                if (window.require) {
+                    console.log('window.require available, invoking IPC...');
+                    const { ipcRenderer } = window.require('electron');
+                    try {
+                        const result = await ipcRenderer.invoke('window-open-react-app');
+                        console.log('IPC result:', result);
+                        if (result.success) {
+                            console.log('React app window opened successfully');
+                        } else {
+                            console.error('Failed to open React app window:', result.error);
+                        }
+                    } catch (error) {
+                        console.error('Error invoking IPC:', error);
+                    }
+                } else {
+                    console.error('window.require not available');
+                }
+            }
+
+            // Button event listeners
+            clearButton.addEventListener('click', clearCanvas);
+            colorButton.addEventListener('click', changeColor);
+            exitButton.addEventListener('click', toggleDrawing);
+
+            // Mouse events
+            canvas.addEventListener('mousedown', (e) => {
+                if (!drawingEnabled) return;
+                isDrawing = true;
+                const pos = getMousePos(e);
+                lastX = pos.x;
+                lastY = pos.y;
+            });
+
+            canvas.addEventListener('mousemove', (e) => {
+                if (!drawingEnabled || !isDrawing) return;
+                
+                const pos = getMousePos(e);
+                ctx.beginPath();
+                ctx.moveTo(lastX, lastY);
+                ctx.lineTo(pos.x, pos.y);
+                ctx.stroke();
+                
+                lastX = pos.x;
+                lastY = pos.y;
+            });
+
+            canvas.addEventListener('mouseup', () => {
+                if (!drawingEnabled) return;
+                isDrawing = false;
+            });
+            
+            canvas.addEventListener('mouseout', () => {
+                if (!drawingEnabled) return;
+                isDrawing = false;
+            });
+
+            // Touch events for mobile support
+            canvas.addEventListener('touchstart', (e) => {
+                if (!drawingEnabled) return;
+                e.preventDefault();
+                isDrawing = true;
+                const pos = getTouchPos(e);
+                lastX = pos.x;
+                lastY = pos.y;
+            });
+
+            canvas.addEventListener('touchmove', (e) => {
+                if (!drawingEnabled) return;
+                e.preventDefault();
+                if (!isDrawing) return;
+                
+                const pos = getTouchPos(e);
+                ctx.beginPath();
+                ctx.moveTo(lastX, lastY);
+                ctx.lineTo(pos.x, pos.y);
+                ctx.stroke();
+                
+                lastX = pos.x;
+                lastY = pos.y;
+            });
+
+            canvas.addEventListener('touchend', (e) => {
+                if (!drawingEnabled) return;
+                e.preventDefault();
+                isDrawing = false;
+            });
+
+            // Expose functions globally for potential use by other components
+            window.canvasDrawing = {
+                toggle: toggleDrawing,
+                clear: clearCanvas,
+                changeColor: changeColor,
+                isEnabled: () => drawingEnabled
+            };
+
+            console.log('Canvas drawing initialized. Press Ctrl+D to toggle drawing mode.');
+        </script>
     </body>
 </html>

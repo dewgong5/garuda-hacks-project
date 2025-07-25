@@ -99,6 +99,46 @@ class WindowIpcHandlers {
                 return { success: false, error: error.message };
             }
         });
+
+        // Open React app in separate window
+        ipcBridge.handle(CHANNELS.WINDOW.OPEN_REACT_APP, async () => {
+            try {
+                // Check if React app window already exists
+                if (this.reactAppWindow && !this.reactAppWindow.isDestroyed()) {
+                    this.reactAppWindow.focus();
+                    return { success: true };
+                }
+
+                // Create new React app window
+                this.reactAppWindow = new BrowserWindow({
+                    width: 400,
+                    height: 400,
+                    frame: false,
+                    transparent: true,
+                    alwaysOnTop: true,
+                    webPreferences: {
+                        nodeIntegration: false,
+                        contextIsolation: true,
+                        webSecurity: true,
+                    },
+                    title: 'React App',
+                    resizable: true,
+                });
+
+                // Load the React app from localhost:3000
+                await this.reactAppWindow.loadURL('http://localhost:3000');
+
+                // Handle window closed
+                this.reactAppWindow.on('closed', () => {
+                    this.reactAppWindow = null;
+                });
+
+                return { success: true };
+            } catch (error) {
+                console.error('❌ Failed to open React app window:', error);
+                return { success: false, error: error.message };
+            }
+        });
     }
 
     removeHandlers() {
@@ -119,4 +159,4 @@ class WindowIpcHandlers {
     }
 }
 
-module.exports = WindowIpcHandlers; 
+module.exports = WindowIpcHandlers;

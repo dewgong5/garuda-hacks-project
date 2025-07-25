@@ -101,6 +101,7 @@ export class AppHeader extends LitElement {
         isClickThrough: { type: Boolean, reflect: true },
         advancedMode: { type: Boolean },
         onAdvancedClick: { type: Function },
+        onDrawingClick: { type: Function },
     };
 
     constructor() {
@@ -117,6 +118,7 @@ export class AppHeader extends LitElement {
         this.isClickThrough = false;
         this.advancedMode = false;
         this.onAdvancedClick = () => {};
+        this.onDrawingClick = () => {};
         this._timerInterval = null;
     }
 
@@ -177,6 +179,7 @@ export class AppHeader extends LitElement {
             customize: 'Customize',
             history: 'Conversation History',
             advanced: 'Advanced Tools',
+            drawing: 'Drawing Mode',
             assistant: 'Lock In',
         };
         return titles[this.currentView] || 'Lock In';
@@ -191,7 +194,7 @@ export class AppHeader extends LitElement {
     }
 
     isNavigationView() {
-        const navigationViews = ['customize', 'history', 'advanced'];
+        const navigationViews = ['customize', 'history', 'advanced', 'drawing'];
         return navigationViews.includes(this.currentView);
     }
 

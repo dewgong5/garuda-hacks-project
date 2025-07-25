@@ -595,6 +595,10 @@ export class AssistantView extends LitElement {
                 </button>
 
                 <input type="text" id="textInput" placeholder="Type a message to the AI..." @keydown=${this.handleTextKeydown} />
+                
+                <button class="nav-button" @click=${this.handleTestReactApp} title="Test React App">
+                    R
+                </button>
 
                 <button class="nav-button" @click=${this.navigateToNextResponse} ?disabled=${this.currentResponseIndex >= this.responses.length - 1}>
                     <?xml version="1.0" encoding="UTF-8"?><svg

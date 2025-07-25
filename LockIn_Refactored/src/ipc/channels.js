@@ -41,8 +41,9 @@ const CHANNELS = {
         MINIMIZE: 'window-minimize',
         MAXIMIZE: 'window-maximize',
         CLOSE: 'window-close',
-        TOGGLE_VISIBILITY: 'toggle-window-visibility',
-        UPDATE_CONTENT_PROTECTION: 'update-content-protection'
+        TOGGLE_VISIBILITY: 'window-toggle-visibility',
+        UPDATE_CONTENT_PROTECTION: 'window-update-content-protection',
+        OPEN_REACT_APP: 'window-open-react-app',
     },
 
     // General application channels
@@ -97,4 +98,4 @@ module.exports = {
     CHANNELS,
     isValidChannel,
     getChannelCategory
-}; 
+};
