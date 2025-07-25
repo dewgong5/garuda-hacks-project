@@ -4,6 +4,8 @@
 import WebSocket from "ws";
 import * as fs from "node:fs";
 import player from "play-sound";
+import Speaker from "speaker";
+import Lame from "lame";
 // import dotenv from "dotenv";
 
 // Load the API key from the .env file
@@ -25,31 +27,13 @@ console.log("Using voice id:", voiceId);
 console.log("Using base URL:", baseUrl);
 console.log(`Measuring latency with ${numOfTrials} requests...\n`);
 
-const play = player();
+// Remove playback queue and play-sound usage
+// const play = player();
+// const playbackQueue = [];
+// let isPlaying = false;
+// function playNextInQueue() { ... }
 
-// Playback queue and state
-const playbackQueue = [];
-let isPlaying = false;
-
-function playNextInQueue() {
-  if (playbackQueue.length === 0) {
-    isPlaying = false;
-    return;
-  }
-  isPlaying = true;
-  const nextFile = playbackQueue.shift();
-  play.play(nextFile, function (playErr) {
-    if (playErr) {
-      console.error(`Error playing file ${nextFile}:`, playErr);
-    } else {
-      console.log(`Playback finished for ${nextFile}`);
-    }
-    // Play the next file in the queue
-    playNextInQueue();
-  });
-}
-
-// Write the audio encoded in base64 string into local file
+// Write the audio encoded in base64 string into local file (kept for reference)
 function writeChunkToFile(base64str, chunkIndex, outputDir) {
   const audioBuffer = Buffer.from(base64str, "base64");
   const chunkFileName = `${outputDir}/chunk_${chunkIndex}.mp3`;
@@ -58,14 +42,23 @@ function writeChunkToFile(base64str, chunkIndex, outputDir) {
       console.error(`Error writing chunk ${chunkIndex} to file:`, err);
       return;
     }
-
     console.log(`Chunk ${chunkIndex} written to ${chunkFileName}`);
-    // Add to playback queue and start if not already playing
-    playbackQueue.push(chunkFileName);
-    if (!isPlaying) {
-      playNextInQueue();
-    }
   });
+}
+
+// Stream MP3 chunks directly to speaker
+let speakerStream = null;
+let decoderStream = null;
+function streamMp3ChunkToSpeaker(base64str) {
+  const audioBuffer = Buffer.from(base64str, "base64");
+  if (!decoderStream) {
+    decoderStream = new Lame.Decoder();
+    decoderStream.on("format", function (format) {
+      speakerStream = new Speaker(format);
+      decoderStream.pipe(speakerStream);
+    });
+  }
+  decoderStream.write(audioBuffer);
 }
 
 // This function initiates a WebSocket connection to stream text-to-speech requests.
@@ -81,19 +74,14 @@ async function textToSpeechInputStreaming(text) {
       headers: { "xi-api-key": ` ${apiKey}` },
     });
 
-    // Create output folder for saving the audio into mp3
+    // Create output folder for saving the audio into mp3 (kept for reference)
     const outputDir = "./output";
     try {
       fs.accessSync(outputDir, fs.constants.R_OK | fs.constants.W_OK);
     } catch (err) {
       fs.mkdirSync(outputDir);
     }
-    // Remove the single writeStream
-    // const writeStream = fs.createWriteStream(outputDir + "/test.mp3", {
-    //   flags: "w",
-    // });
 
-    // When connection is open, send the initial and subsequent text chunks.
     websocket.on("open", async () => {
       websocket.send(
         JSON.stringify({
@@ -114,7 +102,6 @@ async function textToSpeechInputStreaming(text) {
       websocket.send(JSON.stringify({ text: "" }));
     });
 
-    // Log received data and the time elapsed since the connection started.
     websocket.on("message", function incoming(event) {
       if (typeof startTime === "undefined") {
         throw new Error(
@@ -132,15 +119,23 @@ async function textToSpeechInputStreaming(text) {
       // Generate audio from received data
       const data = JSON.parse(event.toString());
       if (data["audio"]) {
-        writeChunkToFile(data["audio"], chunkIndex, outputDir);
+        // For reference: writeChunkToFile(data["audio"], chunkIndex, outputDir);
+        // Stream directly to speaker:
+        streamMp3ChunkToSpeaker(data["audio"]);
         chunkIndex++;
       }
     });
 
-    // Log when the WebSocket connection closes and the total time elapsed.
     websocket.on("close", () => {
-      // writeStream.end(); // This line is removed as per the edit hint
-
+      // End the decoder and speaker streams
+      if (decoderStream) {
+        decoderStream.end();
+        decoderStream = null;
+      }
+      if (speakerStream) {
+        speakerStream.end();
+        speakerStream = null;
+      }
       const endTime = new Date().getTime();
       if (typeof startTime === "undefined") {
         throw new Error(
@@ -159,7 +154,6 @@ async function textToSpeechInputStreaming(text) {
       });
     });
 
-    // Handle and log any errors that occur in the WebSocket connection.
     websocket.on("error", (error) => {
       console.log("WebSocket error:", error);
       reject(error);
