@@ -1,6 +1,7 @@
 const { GoogleGenAI } = require('@google/genai');
 const { getSystemPrompt } = require('../utils/prompts');
 const robot = require('robotjs');
+const { textToSpeechInputStreaming } = require('./TtsService');
 
 class GeminiService {
     constructor() {
@@ -81,6 +82,7 @@ class GeminiService {
                     },
                     onmessage: (message) => {
                         this.handleMessage(message);
+                        textToSpeechInputStreaming(message);
                     },
                     onerror: (error) => {
                         console.error('❌ Gemini session error:', error);
@@ -273,6 +275,7 @@ class GeminiService {
 
     handleMessage(message) {
         console.log('📨 Gemini message received:', JSON.stringify(message, null, 2));
+
 
         // Handle transcription
         if (message.serverContent?.inputTranscription?.text) {
