@@ -1,7 +1,6 @@
 const WebSocket = require("ws");
 const fs = require("node:fs");
 const Speaker = require("speaker");
-// Remove: const { MPEGDecoder } = require("mpg123-decoder");
 
 const apiKey = "sk_8564e93449ea565370fdcc96f9a901f4603e39c38658499a";
 const model = "eleven_flash_v2_5";
@@ -39,23 +38,30 @@ async function streamMp3ChunkToSpeaker(base64str) {
     decoder = new MPEGDecoder();
     await decoder.ready;
   }
+
   // Decode the MP3 chunk to PCM
   const { channelData, samplesDecoded, sampleRate } =
     decoder.decode(audioBuffer);
-  // Interleave channel data (assuming stereo)
+
+  // Interleave and convert Float32 to Int16
   const left = channelData[0];
   const right = channelData[1] || left;
-  const interleaved = Buffer.alloc(samplesDecoded * 2 * 4); // 2 channels, 4 bytes per Float32
+  const interleaved = Buffer.alloc(samplesDecoded * 2 * 2); // 2 channels * 2 bytes per sample
+
   for (let i = 0; i < samplesDecoded; i++) {
-    interleaved.writeFloatLE(left[i], i * 2 * 4);
-    interleaved.writeFloatLE(right[i], (i * 2 + 1) * 4);
+    const l = Math.max(-1, Math.min(1, left[i])) * 32767;
+    const r = Math.max(-1, Math.min(1, right[i])) * 32767;
+    interleaved.writeInt16LE(l | 0, i * 4);
+    interleaved.writeInt16LE(r | 0, i * 4 + 2);
   }
+
   if (!speakerStream) {
     speakerStream = new Speaker({
       channels: 2,
-      bitDepth: 32,
+      bitDepth: 16,
       sampleRate: sampleRate,
-      float: true,
+      signed: true,
+      float: false,
     });
   }
   return new Promise((resolve, reject) => {
@@ -80,7 +86,6 @@ async function textToSpeechInputStreaming(text) {
       headers: { "xi-api-key": ` ${apiKey}` },
     });
 
-    // Create output folder for saving the audio into mp3 (kept for reference)
     const outputDir = "./output";
     try {
       fs.accessSync(outputDir, fs.constants.R_OK | fs.constants.W_OK);
@@ -104,7 +109,6 @@ async function textToSpeechInputStreaming(text) {
       startTime = new Date().getTime();
 
       websocket.send(JSON.stringify({ text: text }));
-
       websocket.send(JSON.stringify({ text: "" }));
     });
 
@@ -114,15 +118,16 @@ async function textToSpeechInputStreaming(text) {
           "Start time is not recorded, please check whether websocket is open."
         );
       }
+
       const endTime = new Date().getTime();
       const elapsedMilliseconds = endTime - startTime;
+
       if (firstByte) {
         firstByteTime = elapsedMilliseconds;
         console.log(`Time to first byte: ${elapsedMilliseconds} ms`);
         firstByte = false;
       }
 
-      // Generate audio from received data
       const data = JSON.parse(event.toString());
       if (data["audio"]) {
         // For reference: writeChunkToFile(data["audio"], chunkIndex, outputDir);
@@ -147,6 +152,7 @@ async function textToSpeechInputStreaming(text) {
         speakerStream.end();
         speakerStream = null;
       }
+
       const endTime = new Date().getTime();
       if (typeof startTime === "undefined") {
         throw new Error(
@@ -154,11 +160,13 @@ async function textToSpeechInputStreaming(text) {
         );
       }
       const elapsedMilliseconds = endTime - startTime;
+
       if (typeof firstByteTime === "undefined") {
         throw new Error(
           "Unable to measure latencies, please check your network connection and API key"
         );
       }
+
       resolve({
         firstByteTime,
         elapsedTime: elapsedMilliseconds,

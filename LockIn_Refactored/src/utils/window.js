@@ -70,9 +70,7 @@ function createWindow(sendToRenderer, geminiSessionRef) {
         mainWindow.setAlwaysOnTop(true, 'screen-saver', 1);
     }
 
-    mainWindow.loadFile(
-        path.join(__dirname, '..', '..', 'adri-frontend', 'out', 'index.html')
-    );
+    mainWindow.loadFile(path.join(__dirname, '../index.html'));
 
     // Set default window title
     mainWindow.setTitle('System Monitor');
