@@ -1,64 +1,95 @@
-'use client';
+"use client"
 
-import { useEffect, useState } from 'react';
-import girl from './assets/girl.jpg';
+import { useEffect, useState } from "react"
+import Image from "next/image"
+import { Button } from "@/components/ui/button"
+import { Zap } from "lucide-react"
 
-export default function Home() {
-  const finalText = `Welcome to Speech Tutor
+export default function AISpeechCoachCard() {
+  const messages = [
+    "> Loading voice engine...",
+    "> Microphone access: granted",
+    "> Environment: clear",
+    "> Starting session shortly...",
+    "> Ready when you are",
+    "> Lock in your progress, one step at a time"
+  ]
 
-> Your AI learning companion
-> Preparing session for you...
-> Loading voice engine...
-> Microphone access: granted
-> Environment: clear
-> Starting session shortly...
-> Ready when you are`;
-
-  const [typedText, setTypedText] = useState('');
-  const [charIndex, setCharIndex] = useState(0);
+  const [displayed, setDisplayed] = useState<string[]>([])
+  const [cursorVisible, setCursorVisible] = useState(true)
 
   useEffect(() => {
-    if (charIndex < finalText.length) {
-      const timeout = setTimeout(() => {
-        setTypedText((prev) => prev + finalText[charIndex]);
-        setCharIndex((prev) => prev + 1);
-      }, 20);
-      return () => clearTimeout(timeout);
-    }
-  }, [charIndex]);
+    let index = 0
+    const interval = setInterval(() => {
+      if (index < messages.length) {
+        setDisplayed((prev) => [...prev, messages[index]])
+        index++
+      } else {
+        clearInterval(interval)
+      }
+    }, 1200)
+
+    return () => clearInterval(interval)
+  }, [])
+
+  useEffect(() => {
+    const blink = setInterval(() => {
+      setCursorVisible((prev) => !prev)
+    }, 500)
+
+    return () => clearInterval(blink)
+  }, [])
 
   const handleStart = () => {
-    window?.electronAPI?.openMiniWindow?.();
-  };
+    // Navigate to mini-window
+    window.location.href = "/mini-window"
+  }
 
   return (
-    <div className="h-screen w-screen flex items-center justify-center bg-[#f5f5f5]">
-      <div className="w-[700px] h-[420px] bg-[#555] rounded-sm flex p-6 gap-6 shadow-lg">
-        {/* Left - Image */}
-        <div className="w-[200px] h-[300px] rounded-lg overflow-hidden">
-          <img src={girl.src} alt="Profile" className="w-full h-full object-cover" />
+    <div className="w-full max-w-md bg-white/70 backdrop-blur-sm border border-white/20 rounded-2xl p-6 shadow-lg">
+      {/* Header Section */}
+      <div className="flex items-center gap-4 mb-6">
+        <div className="w-16 h-16 rounded-2xl overflow-hidden shadow-lg bg-gray-100 flex items-center justify-center">
+          <Image
+            src="/placeholder.svg?height=64&width=64&text=AI"
+            alt="AI Assistant"
+            width={64}
+            height={64}
+            className="w-full h-full object-cover"
+          />
         </div>
-
-        {/* Right - Terminal area with button */}
-        <div className="flex flex-col justify-start flex-1">
-          <div
-            className="bg-black text-white p-4 rounded-lg h-[250px] overflow-hidden text-xs font-semibold leading-relaxed shadow-inner whitespace-pre-line"
-            style={{ fontFamily: 'Arial, Calibri, sans-serif' }}
-          >
-            {typedText}
-          </div>
-
-          {/* Start Button directly below */}
-          <div className="flex justify-end mt-4">
-            <button
-              onClick={handleStart}
-              className="bg-white text-black font-bold text-xs px-6 py-2 rounded-full tracking-wide hover:bg-black hover:text-white border hover:border-white transition-all duration-200"
-            >
-              START →
-            </button>
-          </div>
+        <div>
+          <h2 className="text-xl font-bold text-gray-800">AI Speech Coach</h2>
+          <p className="text-gray-600">Ready to help you improve</p>
         </div>
       </div>
+
+      {/* Terminal Output */}
+      <div className="bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 rounded-xl p-4 mb-6 h-48 overflow-auto">
+        <div className="text-cyan-400 text-sm font-mono space-y-1">
+        {displayed.map((line, i) => (
+  <div key={i} className="pl-1">{line}</div>
+))}
+
+<div className="pl-1">
+  <span className="text-cyan-400">{"> "}</span>
+  <span className={`inline-block ${cursorVisible ? "opacity-100" : "opacity-0"}`}>|</span>
+</div>
+
+        </div>
+      </div>
+
+      {/* Action Button */}
+      <Button
+        onClick={handleStart}
+        className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-4 rounded-xl shadow-lg transform transition-all duration-300 hover:scale-105 hover:shadow-xl"
+      >
+        <div className="flex items-center justify-center gap-3">
+          <Zap className="w-5 h-5" />
+          <span>Start AI Session</span>
+          <div className="text-lg">→</div>
+        </div>
+      </Button>
     </div>
-  );
+  )
 }

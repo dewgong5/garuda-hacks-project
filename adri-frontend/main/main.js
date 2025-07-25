@@ -9,11 +9,11 @@ const appIcon = path.join(__dirname, 'assets', 'favicon.ico');
 
 function createMainWindow() {
   mainWindow = new BrowserWindow({
-    width: 500,
-    height: 300,
+    width: 460,
+    height: 420,
     frame: true,
     transparent: false,
-    resizable: true,
+    resizable: false,
     icon: appIcon, // ✅ Custom icon
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
