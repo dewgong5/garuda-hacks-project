@@ -23,8 +23,8 @@ function ensureDataDirectories() {
 
 function createWindow(sendToRenderer, geminiSessionRef) {
     // Get layout preference (default to 'normal')
-    let windowWidth = 1100;
-    let windowHeight = 600;
+    const primaryDisplay = screen.getPrimaryDisplay();
+    const { width: windowWidth, height: windowHeight } = primaryDisplay.workAreaSize;
 
     const mainWindow = new BrowserWindow({
         width: windowWidth,
@@ -61,7 +61,6 @@ function createWindow(sendToRenderer, geminiSessionRef) {
     mainWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
 
     // Center window at the top of the screen
-    const primaryDisplay = screen.getPrimaryDisplay();
     const { width: screenWidth } = primaryDisplay.workAreaSize;
     const x = Math.floor((screenWidth - windowWidth) / 2);
     const y = 0;

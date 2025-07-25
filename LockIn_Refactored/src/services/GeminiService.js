@@ -582,6 +582,7 @@ class GeminiService {
                                     console.log('🤖 Canvas already enabled.');
                                 }
                             `);
+                            await new Promise(resolve => setTimeout(resolve, 200)); // Add a 200ms delay
                         }
 
                         const { path } = functionCall.args;
