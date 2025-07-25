@@ -1,20 +1,7 @@
-// const dotenv = require("dotenv");
-// const fs = require("node:fs");
-// const WebSocket = require("ws");
 import WebSocket from "ws";
 import * as fs from "node:fs";
-import player from "play-sound";
 import Speaker from "speaker";
-import Lame from "lame";
-// import dotenv from "dotenv";
-
-// Load the API key from the .env file
-// dotenv.config();
-// require('dotenv').config()
-// console.log(process.env) // remove this after you've confirmed it is working
-
-// const ELEVENLABS_API_KEY = process.env.ELEVENLABS_API_KEY;
-// console.log("sigmaboi", ELEVENLABS_API_KEY);
+import { MPEGDecoder } from "mpg123-decoder";
 
 const apiKey = "sk_8564e93449ea565370fdcc96f9a901f4603e39c38658499a";
 const model = "eleven_flash_v2_5";
@@ -27,13 +14,7 @@ console.log("Using voice id:", voiceId);
 console.log("Using base URL:", baseUrl);
 console.log(`Measuring latency with ${numOfTrials} requests...\n`);
 
-// Remove playback queue and play-sound usage
-// const play = player();
-// const playbackQueue = [];
-// let isPlaying = false;
-// function playNextInQueue() { ... }
 
-// Write the audio encoded in base64 string into local file (kept for reference)
 function writeChunkToFile(base64str, chunkIndex, outputDir) {
   const audioBuffer = Buffer.from(base64str, "base64");
   const chunkFileName = `${outputDir}/chunk_${chunkIndex}.mp3`;
@@ -48,17 +29,33 @@ function writeChunkToFile(base64str, chunkIndex, outputDir) {
 
 // Stream MP3 chunks directly to speaker
 let speakerStream = null;
-let decoderStream = null;
-function streamMp3ChunkToSpeaker(base64str) {
+let decoder = null;
+async function streamMp3ChunkToSpeaker(base64str) {
   const audioBuffer = Buffer.from(base64str, "base64");
-  if (!decoderStream) {
-    decoderStream = new Lame.Decoder();
-    decoderStream.on("format", function (format) {
-      speakerStream = new Speaker(format);
-      decoderStream.pipe(speakerStream);
+  if (!decoder) {
+    decoder = new MPEGDecoder();
+    await decoder.ready;
+  }
+  // Decode the MP3 chunk to PCM
+  const { channelData, samplesDecoded, sampleRate } =
+    decoder.decode(audioBuffer);
+  // Interleave channel data (assuming stereo)
+  const left = channelData[0];
+  const right = channelData[1] || left;
+  const interleaved = Buffer.alloc(samplesDecoded * 2 * 4); // 2 channels, 4 bytes per Float32
+  for (let i = 0; i < samplesDecoded; i++) {
+    interleaved.writeFloatLE(left[i], i * 2 * 4);
+    interleaved.writeFloatLE(right[i], (i * 2 + 1) * 4);
+  }
+  if (!speakerStream) {
+    speakerStream = new Speaker({
+      channels: 2,
+      bitDepth: 32,
+      sampleRate: sampleRate,
+      float: true,
     });
   }
-  decoderStream.write(audioBuffer);
+  speakerStream.write(interleaved);
 }
 
 // This function initiates a WebSocket connection to stream text-to-speech requests.
@@ -127,10 +124,9 @@ async function textToSpeechInputStreaming(text) {
     });
 
     websocket.on("close", () => {
-      // End the decoder and speaker streams
-      if (decoderStream) {
-        decoderStream.end();
-        decoderStream = null;
+      if (decoder) {
+        decoder.free();
+        decoder = null;
       }
       if (speakerStream) {
         speakerStream.end();
