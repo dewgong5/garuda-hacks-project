@@ -160,6 +160,33 @@ async function textToSpeechInputStreaming(text) {
   });
 }
 
+const ttsQueue = [];
+let isSpeaking = false;
+
+async function processQueue() {
+  if (isSpeaking || ttsQueue.length === 0) return;
+  isSpeaking = true;
+  const { text, resolve, reject } = ttsQueue.shift();
+  try {
+    await textToSpeechInputStreaming(text);
+    resolve();
+  } catch (err) {
+    reject(err);
+  } finally {
+    isSpeaking = false;
+    processQueue(); // Process next in queue
+  }
+}
+
+function queueTextToSpeech(text) {
+  return new Promise((resolve, reject) => {
+    ttsQueue.push({ text, resolve, reject });
+    if (!isSpeaking) {
+      processQueue();
+    }
+  });
+}
+
 async function measureLatencies() {
   const text =
     "Hello we are in Indonesia. We love eating fried chicken in indonesia. I ride a car everyday. The sun is very hot.";
@@ -176,6 +203,5 @@ if (require.main === module) {
 }
 
 module.exports = {
-  textToSpeechInputStreaming,
-  measureLatencies,
+  queueTextToSpeech,
 };
