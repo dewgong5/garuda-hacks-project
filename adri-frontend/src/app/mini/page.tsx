@@ -101,25 +101,25 @@ export default function MiniWindow() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-100 via-purple-50 to-cyan-100 flex items-center justify-center p-6">
       {/* Main Interface */}
-      <div className="relative w-[400px] bg-white/80 backdrop-blur-sm border border-white/30 rounded-3xl shadow-2xl overflow-hidden">
+      <div className="relative w-[100px] h-[50px] bg-white/80 backdrop-blur-sm border border-white/30 shadow-2xl overflow-hidden">
         {/* Close Button */}
         <Button
           onClick={handleClose}
           variant="ghost"
           size="sm"
-          className="absolute top-4 right-4 z-10 w-10 h-10 p-0 bg-red-500/90 text-white rounded-full hover:bg-red-600 hover:scale-110 transition-all shadow-lg"
+          className="absolute top-2 right-2 z-10 w-8 h-8 p-0 bg-red-500/90 text-white hover:bg-red-600 hover:scale-110 transition-all shadow-lg"
         >
-          <X className="w-5 h-5" />
+          <X className="w-4 h-4" />
         </Button>
 
         {/* Video/Image Area */}
-        <div className="relative w-full h-64 bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
+        <div className="relative w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
           <div className="absolute inset-0 flex items-center justify-center">
             <Image
-              src="/placeholder.svg?height=256&width=400&text=AI+Coach"
+              src="/placeholder.svg?height=50&width=100&text=AI+Coach"
               alt="AI Coach"
-              width={400}
-              height={256}
+              width={100}
+              height={50}
               className="w-full h-full object-cover"
             />
           </div>
@@ -127,7 +127,7 @@ export default function MiniWindow() {
           {/* Listening Indicator Overlay */}
           {isListening && (
             <div className="absolute inset-0 bg-blue-500/20 flex items-center justify-center">
-              <div className="bg-blue-600/90 text-white px-4 py-2 rounded-full text-sm font-medium animate-pulse">
+              <div className="bg-blue-600/90 text-white px-2 py-1 rounded-full text-xs font-medium animate-pulse">
                 🎤 Listening...
               </div>
             </div>
@@ -135,36 +135,31 @@ export default function MiniWindow() {
         </div>
 
         {/* Controls Area */}
-        <div className="p-6">
-          <div className="flex items-center gap-4">
+        <div className="p-1">
+          <div className="flex items-center gap-2 justify-center">
             {/* Hold to Talk Button */}
             <Button
               onMouseDown={handleMouseDown}
               onMouseUp={handleMouseUp}
-              onMouseLeave={handleMouseUp} // Stop if mouse leaves button
+              onMouseLeave={handleMouseUp}
               onTouchStart={handleMouseDown}
               onTouchEnd={handleMouseUp}
-              className={`w-16 h-16 rounded-full flex items-center justify-center transition-all duration-200 select-none ${
+              className={`w-8 h-8 rounded flex items-center justify-center transition-all duration-200 select-none ${
                 isListening
                   ? "bg-gradient-to-r from-red-500 to-pink-500 shadow-lg shadow-red-500/25 scale-110"
                   : "bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 shadow-lg shadow-blue-500/25"
               }`}
             >
-              <Mic className="w-6 h-6 text-white" />
+              <Mic className="w-4 h-4 text-white" />
             </Button>
-
-            {/* Audio Visualizer */}
-            <div className="flex-1">
-              <canvas ref={canvasRef} width={280} height={40} className="w-full h-10 rounded-lg bg-gray-50" />
-            </div>
           </div>
 
           {/* Instructions */}
-          <div className="mt-4 text-center">
-            <p className="text-sm text-gray-600">
+          <div className="mt-1 text-center">
+            <p className="text-xs text-gray-600">
               {isListening ? (
-                <span className="flex items-center justify-center gap-2 text-blue-600 font-medium">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                <span className="flex items-center justify-center gap-1 text-blue-600 font-medium">
+                  <div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse"></div>
                   Hold to keep talking
                 </span>
               ) : (

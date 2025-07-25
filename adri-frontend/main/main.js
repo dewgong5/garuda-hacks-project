@@ -33,14 +33,13 @@ function createMiniWindow() {
   const { width, height } = screen.getPrimaryDisplay().workAreaSize;
 
   miniWindow = new BrowserWindow({
-    width: 300, // or your preferred width
-    height: 300, // or your preferred height
-    x: width - 280,
-    y: height - 280,
+    width: 200,
+    height: 300,
+    x: width - 130,
+    y: height - 100,
     frame: true,
     transparent: false,
     resizable: false,
-    alwaysOnTop: true,
     icon: appIcon,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
