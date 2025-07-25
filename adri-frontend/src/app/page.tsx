@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import Image from "next/image"
+import girl from '@/app/assets/girl.jpg'
 import { Button } from "@/components/ui/button"
 import { Zap } from "lucide-react"
 
@@ -50,7 +51,7 @@ export default function AISpeechCoachCard() {
       <div className="flex items-center gap-4 mb-6">
         <div className="w-16 h-16 rounded-2xl overflow-hidden shadow-lg bg-gray-100 flex items-center justify-center">
           <Image
-            src="/placeholder.svg?height=64&width=64&text=AI"
+            src={girl.src}
             alt="AI Assistant"
             width={64}
             height={64}

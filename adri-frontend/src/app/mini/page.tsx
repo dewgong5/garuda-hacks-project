@@ -4,6 +4,7 @@ import type React from "react"
 
 import { useState, useRef, useEffect, useCallback } from "react"
 import Image from "next/image"
+import girl from '@/app/assets/girl2.jpg'
 
 export default function PushToTalkPage() {
   const [isRecording, setIsRecording] = useState(false)
@@ -138,7 +139,7 @@ export default function PushToTalkPage() {
         {/* Background Image */}
         <div className="absolute inset-0 z-0">
           <Image
-            src="/images/girl-background.jpg"
+            src={girl.src}
             alt="Background"
             width={175}
             height={250}
