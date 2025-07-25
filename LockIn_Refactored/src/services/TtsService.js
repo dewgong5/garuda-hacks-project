@@ -25,11 +25,14 @@ console.log("Using base URL:", baseUrl);
 console.log(`Measuring latency with ${numOfTrials} requests...\n`);
 
 // Write the audio encoded in base64 string into local file
-function writeToLocal(base64str, writeStream) {
+function writeChunkToFile(base64str, chunkIndex, outputDir) {
   const audioBuffer = Buffer.from(base64str, "base64");
-  writeStream.write(audioBuffer, (err) => {
+  const chunkFileName = `${outputDir}/chunk_${chunkIndex}.mp3`;
+  fs.writeFile(chunkFileName, audioBuffer, (err) => {
     if (err) {
-      console.error("Error writing to file:", err);
+      console.error(`Error writing chunk ${chunkIndex} to file:`, err);
+    } else {
+      console.log(`Chunk ${chunkIndex} written to ${chunkFileName}`);
     }
   });
 }
@@ -40,6 +43,7 @@ async function textToSpeechInputStreaming(text) {
     let firstByteTime;
     let startTime;
     let firstByte = true;
+    let chunkIndex = 1; // Counter for chunk files
 
     const uri = `wss://${baseUrl}/v1/text-to-speech/${voiceId}/stream-input?model_id=${model}`;
     const websocket = new WebSocket(uri, {
@@ -53,9 +57,10 @@ async function textToSpeechInputStreaming(text) {
     } catch (err) {
       fs.mkdirSync(outputDir);
     }
-    const writeStream = fs.createWriteStream(outputDir + "/test.mp3", {
-      flags: "w",
-    });
+    // Remove the single writeStream
+    // const writeStream = fs.createWriteStream(outputDir + "/test.mp3", {
+    //   flags: "w",
+    // });
 
     // When connection is open, send the initial and subsequent text chunks.
     websocket.on("open", async () => {
@@ -96,13 +101,14 @@ async function textToSpeechInputStreaming(text) {
       // Generate audio from received data
       const data = JSON.parse(event.toString());
       if (data["audio"]) {
-        writeToLocal(data["audio"], writeStream);
+        writeChunkToFile(data["audio"], chunkIndex, outputDir);
+        chunkIndex++;
       }
     });
 
     // Log when the WebSocket connection closes and the total time elapsed.
     websocket.on("close", () => {
-      writeStream.end();
+      // writeStream.end(); // This line is removed as per the edit hint
 
       const endTime = new Date().getTime();
       if (typeof startTime === "undefined") {
@@ -131,7 +137,8 @@ async function textToSpeechInputStreaming(text) {
 }
 
 export async function measureLatencies() {
-  const text = "Test 1 test 2 test 3.";
+  const text =
+    "Hello we are in Indonesia. We love eating fried chicken in indonesia. I ride a car everyday. The sun is very hot.";
 
   const result = await textToSpeechInputStreaming(text);
   console.log(`First byte time: ${result.firstByteTime} ms`);
