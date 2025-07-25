@@ -40,6 +40,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
     closeWindow: () => ipcRenderer.invoke(CHANNELS.WINDOW.CLOSE),
     toggleWindowVisibility: () => ipcRenderer.invoke(CHANNELS.WINDOW.TOGGLE_VISIBILITY),
     updateContentProtection: (enabled) => ipcRenderer.invoke(CHANNELS.WINDOW.UPDATE_CONTENT_PROTECTION, enabled),
+    openReactApp: () => ipcRenderer.invoke(CHANNELS.WINDOW.OPEN_REACT_APP),
+    showMainWindow: () => ipcRenderer.invoke(CHANNELS.WINDOW.SHOW_MAIN),
 
     // App methods
     quitApplication: () => ipcRenderer.invoke(CHANNELS.APP.QUIT),

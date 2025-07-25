@@ -110,32 +110,72 @@ class WindowIpcHandlers {
                 }
 
                 // Create new React app window
+                const path = require('path');
                 this.reactAppWindow = new BrowserWindow({
                     width: 400,
-                    height: 400,
+                    height: 450,
                     frame: false,
-                    transparent: true,
+                    transparent: false,
                     alwaysOnTop: true,
                     webPreferences: {
+                        preload: path.join(__dirname, '../../preload.js'),
                         nodeIntegration: false,
                         contextIsolation: true,
                         webSecurity: true,
                     },
                     title: 'React App',
-                    resizable: true,
+                    resizable: false,
                 });
 
                 // Load the React app from localhost:3000
                 await this.reactAppWindow.loadURL('http://localhost:3000');
 
+                // Hide the main window
+                if (this.mainWindow && !this.mainWindow.isDestroyed()) {
+                    this.mainWindow.hide();
+                }
+
+                setTimeout(() => {
+                if (this.reactAppWindow && !this.reactAppWindow.isDestroyed()) {
+                this.reactAppWindow.close();
+
+                }
+                }, 3000); // 3000 ms = 3 seconds
+
+
                 // Handle window closed
-                this.reactAppWindow.on('closed', () => {
+                this.reactAppWindow.on('closed', async () => {
                     this.reactAppWindow = null;
+                    // Show main window again when React app is closed
+                    if (this.mainWindow && !this.mainWindow.isDestroyed()) {
+                        this.mainWindow.show();
+                    }
                 });
+
+
 
                 return { success: true };
             } catch (error) {
                 console.error('❌ Failed to open React app window:', error);
+                return { success: false, error: error.message };
+            }
+        });
+
+        // Show main window (called from React app)
+        ipcBridge.handle(CHANNELS.WINDOW.SHOW_MAIN, async () => {
+            try {
+                if (this.mainWindow && !this.mainWindow.isDestroyed()) {
+                    this.mainWindow.show();
+                    // Close the React app window
+                    if (this.reactAppWindow && !this.reactAppWindow.isDestroyed()) {
+                        this.reactAppWindow.close();
+                    }
+                    return { success: true };
+                } else {
+                    return { success: false, error: 'Main window not available' };
+                }
+            } catch (error) {
+                console.error('❌ Failed to show main window:', error);
                 return { success: false, error: error.message };
             }
         });
