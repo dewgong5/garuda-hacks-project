@@ -58,7 +58,12 @@ async function streamMp3ChunkToSpeaker(base64str) {
       float: true,
     });
   }
-  speakerStream.write(interleaved);
+  return new Promise((resolve, reject) => {
+    speakerStream.write(interleaved, (err) => {
+      if (err) reject(err);
+      else resolve();
+    });
+  });
 }
 
 // This function initiates a WebSocket connection to stream text-to-speech requests.
@@ -68,6 +73,7 @@ async function textToSpeechInputStreaming(text) {
     let startTime;
     let firstByte = true;
     let chunkIndex = 1; // Counter for chunk files
+    let audioChunkPromises = [];
 
     const uri = `wss://${baseUrl}/v1/text-to-speech/${voiceId}/stream-input?model_id=${model}`;
     const websocket = new WebSocket(uri, {
@@ -121,12 +127,18 @@ async function textToSpeechInputStreaming(text) {
       if (data["audio"]) {
         // For reference: writeChunkToFile(data["audio"], chunkIndex, outputDir);
         // Stream directly to speaker:
-        streamMp3ChunkToSpeaker(data["audio"]);
+        audioChunkPromises.push(streamMp3ChunkToSpeaker(data["audio"]));
         chunkIndex++;
       }
     });
 
-    websocket.on("close", () => {
+    websocket.on("close", async () => {
+      try {
+        // Wait for all audio chunks to finish playing
+        await Promise.all(audioChunkPromises);
+      } catch (err) {
+        console.error("Error while waiting for audio chunks to finish:", err);
+      }
       if (decoder) {
         decoder.free();
         decoder = null;
