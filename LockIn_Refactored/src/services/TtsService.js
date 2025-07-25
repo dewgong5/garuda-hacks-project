@@ -3,6 +3,7 @@
 // const WebSocket = require("ws");
 import WebSocket from "ws";
 import * as fs from "node:fs";
+import player from "play-sound";
 // import dotenv from "dotenv";
 
 // Load the API key from the .env file
@@ -24,6 +25,30 @@ console.log("Using voice id:", voiceId);
 console.log("Using base URL:", baseUrl);
 console.log(`Measuring latency with ${numOfTrials} requests...\n`);
 
+const play = player();
+
+// Playback queue and state
+const playbackQueue = [];
+let isPlaying = false;
+
+function playNextInQueue() {
+  if (playbackQueue.length === 0) {
+    isPlaying = false;
+    return;
+  }
+  isPlaying = true;
+  const nextFile = playbackQueue.shift();
+  play.play(nextFile, function (playErr) {
+    if (playErr) {
+      console.error(`Error playing file ${nextFile}:`, playErr);
+    } else {
+      console.log(`Playback finished for ${nextFile}`);
+    }
+    // Play the next file in the queue
+    playNextInQueue();
+  });
+}
+
 // Write the audio encoded in base64 string into local file
 function writeChunkToFile(base64str, chunkIndex, outputDir) {
   const audioBuffer = Buffer.from(base64str, "base64");
@@ -31,8 +56,14 @@ function writeChunkToFile(base64str, chunkIndex, outputDir) {
   fs.writeFile(chunkFileName, audioBuffer, (err) => {
     if (err) {
       console.error(`Error writing chunk ${chunkIndex} to file:`, err);
-    } else {
-      console.log(`Chunk ${chunkIndex} written to ${chunkFileName}`);
+      return;
+    }
+
+    console.log(`Chunk ${chunkIndex} written to ${chunkFileName}`);
+    // Add to playback queue and start if not already playing
+    playbackQueue.push(chunkFileName);
+    if (!isPlaying) {
+      playNextInQueue();
     }
   });
 }
